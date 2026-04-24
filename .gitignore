@@ -1,0 +1,31 @@
+# ── Environment variables ──────────────────────
+frontend/.env
+frontend/.env.local
+backend/.env
+backend/.env.local
+
+# ── Python ─────────────────────────────────────
+backend/venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/**/*.pyc
+backend/**/*.pyo
+backend/.pytest_cache/
+
+# ── Node ───────────────────────────────────────
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# ── Generated data ─────────────────────────────
+backend/app/data/seed_2000.json
+
+# ── OS ─────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Editors ────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo

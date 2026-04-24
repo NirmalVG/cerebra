@@ -1,0 +1,39 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #050508;
+  overflow: hidden;
+  font-family: var(--font-outfit), system-ui, sans-serif;
+}
+
+canvas {
+  display: block;
+}
+
+/* Custom scrollbar for panels */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(157, 78, 221, 0.3);
+  border-radius: 99px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(157, 78, 221, 0.5);
+}
+
+/* Prevent text selection on 3D canvas interaction */
+canvas {
+  user-select: none;
+  -webkit-user-select: none;
+}

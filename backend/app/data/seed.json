@@ -1,0 +1,289 @@
+{
+  "nodes": [
+    {
+      "id": "quantum-entanglement",
+      "title": "Quantum Entanglement",
+      "domain": "physics",
+      "tags": ["quantum", "nonlocality", "correlation", "EPR"],
+      "importance": 0.92,
+      "wikipedia_title": "Quantum entanglement"
+    },
+    {
+      "id": "natural-selection",
+      "title": "Natural Selection",
+      "domain": "biology",
+      "tags": ["evolution", "darwin", "fitness", "adaptation"],
+      "importance": 0.95,
+      "wikipedia_title": "Natural selection"
+    },
+    {
+      "id": "goedel-incompleteness",
+      "title": "Gödel's Incompleteness Theorems",
+      "domain": "math",
+      "tags": ["logic", "provability", "formal-systems", "incompleteness"],
+      "importance": 0.9,
+      "wikipedia_title": "Gödel's incompleteness theorems"
+    },
+    {
+      "id": "black-holes",
+      "title": "Black Holes",
+      "domain": "cosmos",
+      "tags": ["gravity", "singularity", "event-horizon", "hawking"],
+      "importance": 0.94,
+      "wikipedia_title": "Black hole"
+    },
+    {
+      "id": "dna",
+      "title": "DNA",
+      "domain": "biology",
+      "tags": ["genetics", "helix", "replication", "gene"],
+      "importance": 0.97,
+      "wikipedia_title": "DNA"
+    },
+    {
+      "id": "general-relativity",
+      "title": "General Relativity",
+      "domain": "physics",
+      "tags": ["einstein", "spacetime", "gravity", "curvature"],
+      "importance": 0.96,
+      "wikipedia_title": "General relativity"
+    },
+    {
+      "id": "consciousness",
+      "title": "Consciousness",
+      "domain": "philosophy",
+      "tags": ["mind", "qualia", "hard-problem", "awareness"],
+      "importance": 0.91,
+      "wikipedia_title": "Consciousness"
+    },
+    {
+      "id": "renaissance",
+      "title": "The Renaissance",
+      "domain": "history",
+      "tags": ["humanism", "art", "europe", "rebirth"],
+      "importance": 0.88,
+      "year": 1400,
+      "wikipedia_title": "Renaissance"
+    },
+    {
+      "id": "artificial-intelligence",
+      "title": "Artificial Intelligence",
+      "domain": "technology",
+      "tags": ["machine-learning", "neural-networks", "turing", "AGI"],
+      "importance": 0.95,
+      "wikipedia_title": "Artificial intelligence"
+    },
+    {
+      "id": "impressionism",
+      "title": "Impressionism",
+      "domain": "arts",
+      "tags": ["monet", "painting", "light", "france"],
+      "importance": 0.82,
+      "year": 1874,
+      "wikipedia_title": "Impressionism"
+    },
+    {
+      "id": "free-will",
+      "title": "Free Will",
+      "domain": "philosophy",
+      "tags": ["determinism", "agency", "choice", "compatibilism"],
+      "importance": 0.85,
+      "wikipedia_title": "Free will"
+    },
+    {
+      "id": "big-bang",
+      "title": "The Big Bang",
+      "domain": "cosmos",
+      "tags": ["cosmology", "origin", "expansion", "CMB"],
+      "importance": 0.97,
+      "wikipedia_title": "Big Bang"
+    },
+    {
+      "id": "thermodynamics",
+      "title": "Laws of Thermodynamics",
+      "domain": "physics",
+      "tags": ["entropy", "energy", "heat", "equilibrium"],
+      "importance": 0.89,
+      "wikipedia_title": "Laws of thermodynamics"
+    },
+    {
+      "id": "maslow-hierarchy",
+      "title": "Maslow's Hierarchy of Needs",
+      "domain": "psychology",
+      "tags": ["motivation", "self-actualization", "needs", "humanistic"],
+      "importance": 0.8,
+      "wikipedia_title": "Maslow's hierarchy of needs"
+    },
+    {
+      "id": "internet",
+      "title": "The Internet",
+      "domain": "technology",
+      "tags": ["ARPANET", "TCP/IP", "web", "global-network"],
+      "importance": 0.96,
+      "wikipedia_title": "Internet"
+    },
+    {
+      "id": "game-theory",
+      "title": "Game Theory",
+      "domain": "economics",
+      "tags": ["nash", "strategy", "prisoners-dilemma", "equilibrium"],
+      "importance": 0.83,
+      "wikipedia_title": "Game theory"
+    },
+    {
+      "id": "crispr",
+      "title": "CRISPR-Cas9",
+      "domain": "technology",
+      "tags": ["gene-editing", "biology", "doudna", "genomics"],
+      "importance": 0.88,
+      "wikipedia_title": "CRISPR"
+    },
+    {
+      "id": "dark-matter",
+      "title": "Dark Matter",
+      "domain": "cosmos",
+      "tags": ["cosmology", "invisible-mass", "galaxy", "mystery"],
+      "importance": 0.87,
+      "wikipedia_title": "Dark matter"
+    },
+    {
+      "id": "printing-press",
+      "title": "The Printing Press",
+      "domain": "technology",
+      "tags": ["gutenberg", "information", "books", "revolution"],
+      "importance": 0.91,
+      "year": 1440,
+      "wikipedia_title": "Printing press"
+    },
+    {
+      "id": "eulers-identity",
+      "title": "Euler's Identity",
+      "domain": "math",
+      "tags": ["euler", "e", "pi", "beautiful-equation"],
+      "importance": 0.86,
+      "wikipedia_title": "Euler's identity"
+    }
+  ],
+  "edges": [
+    {
+      "source": "quantum-entanglement",
+      "target": "general-relativity",
+      "relation": "related-to",
+      "strength": 0.6
+    },
+    {
+      "source": "quantum-entanglement",
+      "target": "consciousness",
+      "relation": "related-to",
+      "strength": 0.4
+    },
+    {
+      "source": "natural-selection",
+      "target": "dna",
+      "relation": "causes",
+      "strength": 0.9
+    },
+    {
+      "source": "natural-selection",
+      "target": "consciousness",
+      "relation": "causes",
+      "strength": 0.7
+    },
+    {
+      "source": "dna",
+      "target": "crispr",
+      "relation": "part-of",
+      "strength": 0.8
+    },
+    {
+      "source": "general-relativity",
+      "target": "black-holes",
+      "relation": "causes",
+      "strength": 0.95
+    },
+    {
+      "source": "general-relativity",
+      "target": "big-bang",
+      "relation": "related-to",
+      "strength": 0.85
+    },
+    {
+      "source": "big-bang",
+      "target": "dark-matter",
+      "relation": "related-to",
+      "strength": 0.7
+    },
+    {
+      "source": "big-bang",
+      "target": "black-holes",
+      "relation": "related-to",
+      "strength": 0.6
+    },
+    {
+      "source": "consciousness",
+      "target": "free-will",
+      "relation": "related-to",
+      "strength": 0.8
+    },
+    {
+      "source": "consciousness",
+      "target": "artificial-intelligence",
+      "relation": "related-to",
+      "strength": 0.75
+    },
+    {
+      "source": "artificial-intelligence",
+      "target": "game-theory",
+      "relation": "related-to",
+      "strength": 0.6
+    },
+    {
+      "source": "artificial-intelligence",
+      "target": "internet",
+      "relation": "related-to",
+      "strength": 0.7
+    },
+    {
+      "source": "printing-press",
+      "target": "renaissance",
+      "relation": "causes",
+      "strength": 0.7
+    },
+    {
+      "source": "renaissance",
+      "target": "impressionism",
+      "relation": "preceded-by",
+      "strength": 0.5
+    },
+    {
+      "source": "goedel-incompleteness",
+      "target": "artificial-intelligence",
+      "relation": "related-to",
+      "strength": 0.65
+    },
+    {
+      "source": "goedel-incompleteness",
+      "target": "free-will",
+      "relation": "related-to",
+      "strength": 0.5
+    },
+    {
+      "source": "thermodynamics",
+      "target": "big-bang",
+      "relation": "related-to",
+      "strength": 0.6
+    },
+    {
+      "source": "maslow-hierarchy",
+      "target": "consciousness",
+      "relation": "related-to",
+      "strength": 0.55
+    },
+    {
+      "source": "game-theory",
+      "target": "natural-selection",
+      "relation": "related-to",
+      "strength": 0.6
+    }
+  ]
+}
