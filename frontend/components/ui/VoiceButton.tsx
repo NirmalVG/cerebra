@@ -9,8 +9,6 @@ interface Props {
   disabled?: boolean
 }
 
-// TypeScript type for the Web Speech API
-// (not in standard TS lib — we declare it)
 interface SpeechRecognitionEvent extends Event {
   results: SpeechRecognitionResultList
 }
@@ -54,8 +52,8 @@ export default function VoiceButton({ onTranscript, disabled }: Props) {
       window.SpeechRecognition || window.webkitSpeechRecognition
 
     const recognition = new SpeechRecognition()
-    recognition.continuous = false // stop after first pause
-    recognition.interimResults = true // show partial results
+    recognition.continuous = false
+    recognition.interimResults = true
     recognition.lang = "en-US"
 
     recognition.onresult = (e: SpeechRecognitionEvent) => {
