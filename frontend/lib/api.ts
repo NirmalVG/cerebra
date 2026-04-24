@@ -1,4 +1,24 @@
-// lib/api.ts — update streamQuery
+// lib/api.ts — API client functions
+
+import { KnowledgeGraph } from "./types"
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+
+export async function fetchGraph(): Promise<KnowledgeGraph> {
+  const response = await fetch(`${API_URL}/graph`)
+  if (!response.ok)
+    throw new Error(`Failed to fetch graph: ${response.statusText}`)
+  return response.json()
+}
+
+export async function fetchNodeSummary(nodeId: string): Promise<string> {
+  const response = await fetch(`${API_URL}/node/${nodeId}/summary`)
+  if (!response.ok)
+    throw new Error(`Failed to fetch node summary: ${response.statusText}`)
+  const data = await response.json()
+  return data.summary || ""
+}
+
 export async function streamQuery(
   query: string,
   onNodes: (ids: string[], scores: number[]) => void,
@@ -7,8 +27,6 @@ export async function streamQuery(
   onNewNode: (node: any) => void,
   onDone: () => void,
 ): Promise<void> {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
-
   const response = await fetch(`${API_URL}/query`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

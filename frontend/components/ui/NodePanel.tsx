@@ -49,14 +49,14 @@ export default function NodePanel() {
 
           {/* Panel */}
           <motion.div
-            initial={{ x: 40, opacity: 0 }}
+            initial={{ x: -40, opacity: 0 }} // ← was x: 40
             animate={{ x: 0, opacity: 1 }}
-            exit={{ x: 40, opacity: 0 }}
+            exit={{ x: -40, opacity: 0 }} // ← was x: 40
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
             style={{
               position: "fixed",
-              top: "50%",
-              right: "24px",
+              top: "25%",
+              left: "24px", // ← was right: '24px'
               transform: "translateY(-50%)",
               zIndex: 60,
               width: "340px",

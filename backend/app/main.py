@@ -1,4 +1,5 @@
 # app/main.py
+import os
 from dotenv import load_dotenv
 load_dotenv()
 from fastapi import FastAPI
@@ -28,7 +29,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "https://*.vercel.app",
+        "https://*.vercel.app",          # all Vercel preview deployments
+        os.environ.get("FRONTEND_URL", ""),   # your custom domain if any
     ],
     allow_methods=["*"],
     allow_headers=["*"],

@@ -216,7 +216,7 @@ export default function ChatOverlay() {
               right: "24px",
               zIndex: 70,
               width: "420px",
-              height: "580px",
+              height: "460px",
               background: "rgba(5, 5, 15, 0.94)",
               border: "1px solid rgba(157, 78, 221, 0.25)",
               borderRadius: "16px",
