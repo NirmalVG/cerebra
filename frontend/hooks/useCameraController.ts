@@ -2,54 +2,81 @@
 import { useRef, useEffect } from "react"
 import { useThree, useFrame } from "@react-three/fiber"
 import * as THREE from "three"
+import type { OrbitControls as OrbitControlsImpl } from "three-stdlib"
 import { useStore } from "@/store/useStore"
 
-const _targetPosition = new THREE.Vector3()
-const _currentLookAt = new THREE.Vector3()
-const _desiredPosition = new THREE.Vector3()
+const _nodeTarget = new THREE.Vector3()
+const _cameraTarget = new THREE.Vector3()
+const _cameraDirection = new THREE.Vector3()
 
 export function useCameraController(positions: Map<string, THREE.Vector3>) {
   const { camera } = useThree()
+  const controls = useThree(
+    (state) => state.controls as OrbitControlsImpl | undefined,
+  )
   const selectedNode = useStore((s) => s.selectedNode)
   const isAnimating = useRef(false)
-  const targetPos = useRef<THREE.Vector3 | null>(null)
+  const cameraTarget = useRef<THREE.Vector3 | null>(null)
+  const lookTarget = useRef<THREE.Vector3 | null>(null)
 
   // When selected node changes, set a new camera target
   useEffect(() => {
-    if (!selectedNode) return
+    if (!selectedNode) {
+      isAnimating.current = false
+      return
+    }
+
     const nodePos = positions.get(selectedNode.id)
     if (!nodePos) return
 
-    // Position camera offset from the node
-    // We pull back along the current camera direction so the node
-    // is centered but we don't fly INTO it
-    const offset = new THREE.Vector3(0, 1.5, 6)
-    targetPos.current = nodePos.clone().add(offset)
+    _nodeTarget.copy(nodePos)
+    _cameraDirection.copy(camera.position).sub(_nodeTarget)
+    if (_cameraDirection.lengthSq() < 0.0001) {
+      _cameraDirection.set(0, 0, 1)
+    }
+    _cameraDirection.normalize()
+
+    const currentDistance = camera.position.distanceTo(_nodeTarget)
+    const targetDistance = THREE.MathUtils.clamp(currentDistance, 9, 16)
+
+    _cameraTarget
+      .copy(_nodeTarget)
+      .addScaledVector(_cameraDirection, targetDistance)
+    _cameraTarget.y += 0.8
+
+    cameraTarget.current = _cameraTarget.clone()
+    lookTarget.current = _nodeTarget.clone()
     isAnimating.current = true
-  }, [selectedNode, positions])
+  }, [camera, controls, selectedNode, positions])
 
-  useFrame((state, delta) => {
-    if (!isAnimating.current || !targetPos.current) return
+  useFrame((_, delta) => {
+    if (!isAnimating.current || !cameraTarget.current || !lookTarget.current) {
+      return
+    }
     if (!selectedNode) return
 
     const nodePos = positions.get(selectedNode.id)
     if (!nodePos) return
 
-    // Lerp camera position toward target
-    // 0.06 = smooth, 0.15 = snappier
-    camera.position.lerp(targetPos.current, delta * 4)
+    lookTarget.current.copy(nodePos)
 
-    // Lerp look-at toward the node
-    _currentLookAt.set(0, 0, -1).applyQuaternion(camera.quaternion)
-    _targetPosition.copy(nodePos)
+    const alpha = 1 - Math.exp(-delta * 4.2)
+    camera.position.lerp(cameraTarget.current, alpha)
 
-    const currentLookAtWorld = camera.position.clone().add(_currentLookAt)
-    currentLookAtWorld.lerp(_targetPosition, delta * 4)
-    camera.lookAt(currentLookAtWorld)
+    if (controls) {
+      controls.target.lerp(lookTarget.current, alpha)
+      controls.update()
+    } else {
+      camera.lookAt(lookTarget.current)
+    }
 
     // Stop animating when close enough
-    const dist = camera.position.distanceTo(targetPos.current)
-    if (dist < 0.05) {
+    const cameraDistance = camera.position.distanceTo(cameraTarget.current)
+    const targetDistance = controls
+      ? controls.target.distanceTo(lookTarget.current)
+      : 0
+
+    if (cameraDistance < 0.03 && targetDistance < 0.03) {
       isAnimating.current = false
     }
   })

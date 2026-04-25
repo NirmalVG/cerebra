@@ -9,6 +9,8 @@ import {
   ChromaticAberration,
 } from "@react-three/postprocessing"
 import { BlendFunction } from "postprocessing"
+import * as THREE from "three"
+import type { OrbitControls as OrbitControlsImpl } from "three-stdlib"
 import Brain from "@/components/canvas/Brain"
 import Tooltip from "@/components/ui/Tooltip"
 import NodePanel from "@/components/ui/NodePanel"
@@ -23,7 +25,8 @@ import { useIsMobile } from "@/hooks/useIsMobile"
 
 export default function ExplorePage() {
   const setGraph = useStore((s) => s.setGraph)
-  const orbitRef = useRef<any>(null)
+  const selectedNode = useStore((s) => s.selectedNode)
+  const orbitRef = useRef<OrbitControlsImpl | null>(null)
   const isMobile = useIsMobile()
 
   useEffect(() => {
@@ -35,7 +38,7 @@ export default function ExplorePage() {
   }
   const handleInteractEnd = () => {
     setTimeout(() => {
-      if (orbitRef.current) orbitRef.current.autoRotate = true
+      if (orbitRef.current && !selectedNode) orbitRef.current.autoRotate = true
     }, 3000)
   }
 
@@ -60,7 +63,7 @@ export default function ExplorePage() {
           far: 1000,
         }}
         gl={{ antialias: !isMobile, alpha: false }} // disable AA on mobile for perf
-        dpr={isMobile ? [1, 1.5] : [1, 2]} // cap DPR lower on mobile
+        dpr={isMobile ? 1 : [1, 2]} // keep mobile frames light
         style={{ touchAction: "none" }} // prevents scroll conflict
       >
         <ambientLight intensity={0.3} />
@@ -72,7 +75,7 @@ export default function ExplorePage() {
         <Stars
           radius={80}
           depth={50}
-          count={isMobile ? 1500 : 3000} // fewer stars on mobile
+          count={isMobile ? 600 : 3000} // fewer stars on mobile
           factor={3}
           saturation={0.5}
           fade
@@ -83,16 +86,17 @@ export default function ExplorePage() {
 
         <OrbitControls
           ref={orbitRef}
+          makeDefault
           enableDamping
           dampingFactor={0.06}
-          rotateSpeed={isMobile ? 0.4 : 0.5}
+          rotateSpeed={isMobile ? 0.7 : 0.5}
           zoomSpeed={isMobile ? 0.6 : 0.8}
           minDistance={isMobile ? 8 : 5}
           maxDistance={isMobile ? 60 : 50}
-          autoRotate
+          autoRotate={!selectedNode}
           autoRotateSpeed={0.3}
           // Touch: one finger = rotate, two fingers = pinch zoom
-          touches={{ ONE: 2, TWO: 1 }}
+          touches={{ ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN }}
           onStart={handleInteractStart}
           onEnd={handleInteractEnd}
           // Slightly limit vertical rotation so brain stays oriented
@@ -101,16 +105,7 @@ export default function ExplorePage() {
         />
 
         {/* Skip chromatic aberration on mobile — expensive */}
-        {isMobile ? (
-          <EffectComposer>
-            <Bloom
-              intensity={0.5}
-              luminanceThreshold={0.4}
-              luminanceSmoothing={0.9}
-              blendFunction={BlendFunction.ADD}
-            />
-          </EffectComposer>
-        ) : (
+        {!isMobile && (
           <EffectComposer>
             <Bloom
               intensity={0.5}
