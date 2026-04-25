@@ -1,7 +1,6 @@
 // app/layout.tsx
 import type { Metadata, Viewport } from "next"
 import { Outfit, Space_Mono } from "next/font/google"
-import { ServiceWorkerProvider } from "@/hooks/useServiceWorker"
 import "./globals.css"
 
 const outfit = Outfit({
@@ -157,10 +156,7 @@ export default function RootLayout({
         />
         <meta name="apple-mobile-web-app-title" content="Cerebra" />
       </head>
-      <body suppressHydrationWarning>
-        <ServiceWorkerProvider />
-        {children}
-      </body>
+      <body suppressHydrationWarning>{children}</body>
     </html>
   )
 }
