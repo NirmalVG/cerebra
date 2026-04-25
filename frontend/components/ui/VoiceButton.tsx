@@ -1,7 +1,7 @@
 // components/ui/VoiceButton.tsx
 "use client"
 
-import { useState, useRef, useCallback } from "react"
+import { useState, useRef, useCallback, useSyncExternalStore } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 
 interface Props {
@@ -34,6 +34,11 @@ declare global {
 }
 
 export default function VoiceButton({ onTranscript, disabled }: Props) {
+  const hasHydrated = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  )
   const [state, setState] = useState<"idle" | "listening" | "processing">(
     "idle",
   )
@@ -41,7 +46,7 @@ export default function VoiceButton({ onTranscript, disabled }: Props) {
   const recognitionRef = useRef<SpeechRecognition | null>(null)
 
   const isSupported =
-    typeof window !== "undefined" &&
+    hasHydrated &&
     ("SpeechRecognition" in window || "webkitSpeechRecognition" in window)
 
   const startListening = useCallback(() => {
@@ -128,7 +133,7 @@ export default function VoiceButton({ onTranscript, disabled }: Props) {
               textOverflow: "ellipsis",
             }}
           >
-            "{transcript}"
+            &quot;{transcript}&quot;
           </motion.div>
         )}
       </AnimatePresence>

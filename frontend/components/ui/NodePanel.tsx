@@ -50,7 +50,7 @@ export default function NodePanel() {
     right: 0,
     zIndex: 60,
     width: "100%",
-    maxHeight: "72vh",
+    maxHeight: "min(72dvh, 620px)",
   }
 
   const panelStyles = isMobile ? mobileStyles : desktopStyles
@@ -269,6 +269,9 @@ export default function NodePanel() {
             <div
               style={{
                 padding: isMobile ? "10px 20px 20px" : "12px 20px 16px",
+                paddingBottom: isMobile
+                  ? "max(20px, env(safe-area-inset-bottom))"
+                  : "16px",
                 borderTop: `1px solid ${color}15`,
                 flexShrink: 0,
               }}

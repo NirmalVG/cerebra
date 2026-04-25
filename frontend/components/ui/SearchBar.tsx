@@ -59,9 +59,9 @@ export default function SearchBar() {
     <div
       style={{
         position: "fixed",
-        top: isMobile ? "16px" : "24px",
-        left: isMobile ? "16px" : "50%",
-        right: isMobile ? "16px" : "auto",
+        top: isMobile ? "max(14px, env(safe-area-inset-top))" : "24px",
+        left: isMobile ? "12px" : "50%",
+        right: isMobile ? "12px" : "auto",
         transform: isMobile ? "none" : "translateX(-50%)",
         zIndex: 80,
         width: isMobile ? "auto" : "380px",
@@ -106,11 +106,12 @@ export default function SearchBar() {
           placeholder="Search knowledge..."
           style={{
             flex: 1,
+            minWidth: 0,
             background: "transparent",
             border: "none",
             outline: "none",
             color: "#f8f9fa",
-            fontSize: isMobile ? "15px" : "13px",
+            fontSize: isMobile ? "16px" : "13px",
             fontFamily: "inherit",
             // Prevent iOS zoom on focus (font-size must be ≥16px or use this)
             WebkitAppearance: "none",

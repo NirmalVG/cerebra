@@ -14,15 +14,16 @@ export default function StatsBar() {
   const edgeCount = graph.edges.length
   const activeCount = highlightedNodes.size
 
-  // On mobile: compact pill in bottom-left above the legend button
-  // On desktop: top-left stats bar
+  // On mobile, stack below search so bottom controls stay clear.
   return (
     <div
       style={{
         position: "fixed",
-        top: isMobile ? undefined : "24px",
-        bottom: isMobile ? "76px" : undefined,
-        left: "24px",
+        top: isMobile
+          ? "calc(max(14px, env(safe-area-inset-top)) + 58px)"
+          : "24px",
+        left: isMobile ? "12px" : "24px",
+        right: isMobile ? "12px" : undefined,
         zIndex: 80,
       }}
     >
@@ -36,6 +37,8 @@ export default function StatsBar() {
           display: "flex",
           gap: isMobile ? "10px" : "14px",
           alignItems: "center",
+          justifyContent: isMobile ? "center" : "flex-start",
+          width: isMobile ? "100%" : "auto",
         }}
       >
         <Stat
@@ -92,7 +95,7 @@ function Stat({
           fontWeight: 600,
         }}
       >
-        {typeof value === "number" ? value.toLocaleString() : value}
+        {typeof value === "number" ? value.toLocaleString("en-US") : value}
       </span>
       <span
         style={{

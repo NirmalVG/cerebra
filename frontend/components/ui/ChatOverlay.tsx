@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useSyncExternalStore } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useStore } from "@/store/useStore"
 import { streamQuery } from "@/lib/api"
@@ -73,7 +73,7 @@ export default function ChatOverlay() {
     try {
       await streamQuery(
         userText,
-        (ids, _scores) => {
+        (ids) => {
           setHighlightedNodes(ids)
           if (ids.length > 0 && graph) {
             const topNode = graph.nodes.find((n) => n.id === ids[0])
@@ -155,7 +155,7 @@ export default function ChatOverlay() {
 
   // Panel dimensions
   const panelWidth = isMobile ? "100%" : "420px"
-  const panelHeight = isMobile ? "82dvh" : "580px"
+  const panelHeight = isMobile ? "min(82dvh, 680px)" : "580px"
   const panelRight = isMobile ? "0" : "24px"
   const panelBottom = isMobile ? "0" : "76px"
   const panelRadius = isMobile ? "20px 20px 0 0" : "16px"
@@ -179,8 +179,10 @@ export default function ChatOverlay() {
         whileTap={{ scale: 0.95 }}
         style={{
           position: "fixed",
-          bottom: "24px",
-          right: "24px",
+          bottom: isMobile
+            ? "max(14px, env(safe-area-inset-bottom))"
+            : "24px",
+          right: isMobile ? "12px" : "24px",
           zIndex: 80,
           background: chatOpen
             ? "rgba(157, 78, 221, 0.3)"
@@ -197,6 +199,9 @@ export default function ChatOverlay() {
           alignItems: "center",
           gap: "8px",
           letterSpacing: "0.02em",
+          minHeight: isMobile ? "44px" : undefined,
+          maxWidth: isMobile ? "calc(100vw - 156px)" : undefined,
+          whiteSpace: "nowrap",
         }}
       >
         <BrainIcon />
@@ -235,6 +240,7 @@ export default function ChatOverlay() {
                 zIndex: 70,
                 width: panelWidth,
                 height: panelHeight,
+                maxWidth: "100vw",
                 background: "rgba(5, 5, 15, 0.96)",
                 border: "1px solid rgba(157, 78, 221, 0.25)",
                 borderRadius: panelRadius,
@@ -374,6 +380,7 @@ export default function ChatOverlay() {
                   disabled={loading}
                   style={{
                     flex: 1,
+                    minWidth: 0,
                     background: "rgba(255,255,255,0.05)",
                     border: "1px solid rgba(157, 78, 221, 0.25)",
                     borderRadius: "8px",
@@ -559,6 +566,11 @@ function VoiceButton({
   onTranscript: (t: string) => void
   disabled?: boolean
 }) {
+  const hasHydrated = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  )
   const [state, setState] = useState<"idle" | "listening" | "processing">(
     "idle",
   )
@@ -567,7 +579,7 @@ function VoiceButton({
   const isMobile = useIsMobile()
 
   const isSupported =
-    typeof window !== "undefined" &&
+    hasHydrated &&
     ("SpeechRecognition" in window || "webkitSpeechRecognition" in window)
 
   if (!isSupported) return null
@@ -634,7 +646,7 @@ function VoiceButton({
               zIndex: 100,
             }}
           >
-            "{transcript}"
+            &quot;{transcript}&quot;
           </motion.div>
         )}
       </AnimatePresence>

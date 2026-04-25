@@ -52,9 +52,12 @@ export default function DomainLegend() {
     <div
       style={{
         position: "fixed",
-        bottom: "24px",
-        left: "24px",
+        bottom: isMobile
+          ? "max(14px, env(safe-area-inset-bottom))"
+          : "24px",
+        left: isMobile ? "12px" : "24px",
         zIndex: 80,
+        maxWidth: isMobile ? "calc(100vw - 24px)" : undefined,
       }}
     >
       {/* Toggle button */}
@@ -76,6 +79,8 @@ export default function DomainLegend() {
           gap: "8px",
           letterSpacing: "0.06em",
           textTransform: "uppercase",
+          maxWidth: "100%",
+          minHeight: isMobile ? "44px" : undefined,
         }}
       >
         {/* Coloured domain dots preview */}
@@ -129,7 +134,10 @@ export default function DomainLegend() {
                 borderRadius: "12px",
                 padding: "10px",
                 backdropFilter: "blur(20px)",
-                minWidth: isMobile ? "200px" : "180px",
+                minWidth: isMobile ? "min(220px, calc(100vw - 24px))" : "180px",
+                maxWidth: isMobile ? "calc(100vw - 24px)" : undefined,
+                maxHeight: isMobile ? "min(54dvh, 420px)" : undefined,
+                overflowY: "auto",
               }}
             >
               {/* Show all */}
