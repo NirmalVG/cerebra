@@ -1,5 +1,27 @@
 // Public service worker for PWA support
-const CACHE_NAME = "cerebra-cache-v1"
+const IS_LOCALHOST =
+  self.location.hostname === "localhost" ||
+  self.location.hostname === "127.0.0.1" ||
+  self.location.hostname === "[::1]"
+
+if (IS_LOCALHOST) {
+  self.addEventListener("install", () => {
+    self.skipWaiting()
+  })
+
+  self.addEventListener("activate", (event) => {
+    event.waitUntil(
+      caches
+        .keys()
+        .then((cacheNames) =>
+          Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName))),
+        )
+        .then(() => self.registration.unregister())
+        .then(() => self.clients.claim()),
+    )
+  })
+} else {
+const CACHE_NAME = "cerebra-cache-v2"
 const RUNTIME_CACHE = "cerebra-runtime"
 
 // Assets to cache on install
@@ -132,3 +154,4 @@ self.addEventListener("message", (event) => {
     self.skipWaiting()
   }
 })
+}
