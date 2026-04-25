@@ -82,10 +82,17 @@ export const metadata: Metadata = {
       "Explore the universe of human knowledge as a living 3D neural network",
     images: [
       {
-        url: "/cerebra-logo.png",
+        url: "https://cerebra.ai/cerebra-logo.png",
         width: 1200,
         height: 630,
         alt: "Cerebra Knowledge Network",
+        type: "image/png",
+      },
+      {
+        url: "https://cerebra.ai/android-chrome-512x512.png",
+        width: 512,
+        height: 512,
+        alt: "Cerebra App Icon",
         type: "image/png",
       },
     ],
@@ -95,12 +102,14 @@ export const metadata: Metadata = {
     title: "Cerebra — Knowledge Visualized",
     description:
       "Explore the universe of human knowledge as a living 3D neural network",
-    images: ["/cerebra-logo.png"],
+    images: ["https://cerebra.ai/cerebra-logo.png"],
     creator: "@cerebraai",
   },
   other: {
     "msapplication-TileColor": "#050508",
     "msapplication-config": "/browserconfig.xml",
+    "og:type": "website",
+    "og:locale": "en_US",
   },
 }
 
@@ -126,6 +135,18 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#050508" />
         <meta name="mobile-web-app-capable" content="yes" />
+        {/* WhatsApp Sharing Optimization */}
+        <meta property="og:image" content="https://cerebra.ai/cerebra-logo.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:image:alt" content="Cerebra Knowledge Network" />
+        {/* Additional sharing optimization */}
+        <meta name="description" content="Explore the universe of human knowledge as a living 3D neural network. An immersive experience of interconnected information." />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Cerebra" />
       </head>
       <body suppressHydrationWarning>
         <ServiceWorkerProvider />
