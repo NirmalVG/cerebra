@@ -546,6 +546,9 @@ function MessageBubble({
 interface SpeechRecognitionEvent extends Event {
   results: SpeechRecognitionResultList
 }
+interface SpeechRecognitionErrorEvent extends Event {
+  error: string
+}
 interface SpeechRecognition extends EventTarget {
   continuous: boolean
   interimResults: boolean
@@ -554,7 +557,7 @@ interface SpeechRecognition extends EventTarget {
   stop(): void
   abort(): void
   onresult: ((e: SpeechRecognitionEvent) => void) | null
-  onerror: ((e: Event) => void) | null
+  onerror: ((e: SpeechRecognitionErrorEvent) => void) | null
   onend: (() => void) | null
 }
 declare global {
@@ -581,16 +584,11 @@ function VoiceButton({
   )
   const [transcript, setTranscript] = useState("")
   const recognitionRef = useRef<SpeechRecognition | null>(null)
-  const [isSupported, setIsSupported] = useState(true)
   const isMobile = useIsMobile()
 
-  // Check browser support on mount
-  useEffect(() => {
-    if (!hasHydrated) return
-    const supported =
-      "SpeechRecognition" in window || "webkitSpeechRecognition" in window
-    setIsSupported(supported)
-  }, [hasHydrated])
+  const isSupported =
+    hasHydrated &&
+    ("SpeechRecognition" in window || "webkitSpeechRecognition" in window)
 
   // On iOS Safari, Speech Recognition is not supported
   if (!isSupported && isMobile) {
@@ -632,8 +630,7 @@ function VoiceButton({
     try {
       // Get Speech Recognition API
       const SRConstructor =
-        (window as any).SpeechRecognition ||
-        (window as any).webkitSpeechRecognition
+        window.SpeechRecognition || window.webkitSpeechRecognition
 
       if (!SRConstructor) {
         console.error("Speech Recognition not available in this browser")
@@ -654,7 +651,7 @@ function VoiceButton({
 
       r.lang = "en-US"
 
-      r.onresult = (e: any) => {
+      r.onresult = (e: SpeechRecognitionEvent) => {
         try {
           if (!e.results || e.results.length === 0) {
             console.log("No results from speech recognition")
@@ -680,7 +677,7 @@ function VoiceButton({
         }
       }
 
-      r.onerror = (e: any) => {
+      r.onerror = (e: SpeechRecognitionErrorEvent) => {
         console.error("Speech recognition error:", e.error)
         setState("idle")
         setTranscript("")

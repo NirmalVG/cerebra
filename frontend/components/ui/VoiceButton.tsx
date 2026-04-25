@@ -14,6 +14,9 @@ interface Props {
 interface SpeechRecognitionEvent extends Event {
   results: SpeechRecognitionResultList
 }
+interface SpeechRecognitionErrorEvent extends Event {
+  error: string
+}
 interface SpeechRecognition extends EventTarget {
   continuous: boolean
   interimResults: boolean
@@ -22,7 +25,7 @@ interface SpeechRecognition extends EventTarget {
   stop(): void
   abort(): void
   onresult: ((e: SpeechRecognitionEvent) => void) | null
-  onerror: ((e: Event) => void) | null
+  onerror: ((e: SpeechRecognitionErrorEvent) => void) | null
   onend: (() => void) | null
 }
 
