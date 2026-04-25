@@ -39,7 +39,7 @@ _nodes_by_id = {n["id"]: n for n in _graph["nodes"]}
 graph_rag = GraphRAG(_graph["nodes"], _graph["edges"])
 
 # Confidence threshold below which we trigger dynamic node generation
-DYNAMIC_THRESHOLD = 0.35
+DYNAMIC_THRESHOLD = 0.05
 
 
 class QueryRequest(BaseModel):
