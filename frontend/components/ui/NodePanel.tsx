@@ -67,9 +67,10 @@ export default function NodePanel() {
     top: "50%",
     left: "50%",
     zIndex: 90,
-    width: "calc(100vw - 32px)",
-    maxWidth: "390px",
-    maxHeight: "min(74dvh, 620px)",
+    width: "calc(100vw - 24px)",
+    maxWidth: "400px",
+    maxHeight:
+      "calc(100dvh - max(72px, calc(env(safe-area-inset-top) + env(safe-area-inset-bottom) + 40px)))",
   }
 
   const panelStyles = isMobile ? mobileStyles : desktopStyles
@@ -117,6 +118,7 @@ export default function NodePanel() {
               overflow: "hidden",
               display: "flex",
               flexDirection: "column",
+              boxShadow: isMobile ? "0 20px 60px rgba(0,0,0,0.45)" : undefined,
             }}
           >
             {/* Color accent bar */}
@@ -131,7 +133,7 @@ export default function NodePanel() {
             {/* Header */}
             <div
               style={{
-                padding: isMobile ? "14px 20px 12px" : "20px 20px 16px",
+                padding: isMobile ? "12px 16px 10px" : "20px 20px 16px",
                 flexShrink: 0,
               }}
             >
@@ -159,7 +161,7 @@ export default function NodePanel() {
                   <h2
                     style={{
                       color: "#f8f9fa",
-                      fontSize: isMobile ? "18px" : "20px",
+                      fontSize: isMobile ? "17px" : "20px",
                       fontWeight: 700,
                       margin: 0,
                       lineHeight: 1.25,
@@ -210,7 +212,7 @@ export default function NodePanel() {
                         border: `1px solid ${color}33`,
                         color: color,
                         fontSize: "10px",
-                        padding: "3px 9px",
+                        padding: isMobile ? "3px 7px" : "3px 9px",
                         borderRadius: "99px",
                         fontWeight: 500,
                       }}
@@ -247,7 +249,7 @@ export default function NodePanel() {
             {/* Summary */}
             <div
               style={{
-                padding: "16px 20px 20px",
+                padding: isMobile ? "14px 16px 16px" : "16px 20px 20px",
                 overflowY: "auto",
                 flex: 1,
                 WebkitOverflowScrolling: "touch",
@@ -272,7 +274,7 @@ export default function NodePanel() {
             {/* Importance bar */}
             <div
               style={{
-                padding: isMobile ? "10px 20px 20px" : "12px 20px 16px",
+                padding: isMobile ? "10px 16px 20px" : "12px 20px 16px",
                 paddingBottom: isMobile
                   ? "max(20px, env(safe-area-inset-bottom))"
                   : "16px",
