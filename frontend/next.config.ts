@@ -3,7 +3,6 @@ import type { NextConfig } from "next"
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   compress: true,
-  optimizeFonts: true,
   headers: async () => [
     {
       source: "/:path*",
