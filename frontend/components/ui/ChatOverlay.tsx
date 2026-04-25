@@ -581,41 +581,137 @@ function VoiceButton({
   )
   const [transcript, setTranscript] = useState("")
   const recognitionRef = useRef<SpeechRecognition | null>(null)
+  const [isSupported, setIsSupported] = useState(true)
   const isMobile = useIsMobile()
 
-  const isSupported =
-    hasHydrated &&
-    ("SpeechRecognition" in window || "webkitSpeechRecognition" in window)
+  // Check browser support on mount
+  useEffect(() => {
+    if (!hasHydrated) return
+    const supported =
+      "SpeechRecognition" in window || "webkitSpeechRecognition" in window
+    setIsSupported(supported)
+  }, [hasHydrated])
 
-  if (!isSupported) return null
+  // On iOS Safari, Speech Recognition is not supported
+  if (!isSupported && isMobile) {
+    return (
+      <div
+        title="Voice input not supported on iOS"
+        style={{
+          width: isMobile ? "42px" : "36px",
+          height: isMobile ? "42px" : "36px",
+          borderRadius: "50%",
+          border: "1px solid rgba(157, 78, 221, 0.2)",
+          background: "rgba(157, 78, 221, 0.05)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          opacity: 0.3,
+          cursor: "not-allowed",
+          flexShrink: 0,
+        }}
+      >
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="#888"
+          strokeWidth="2"
+        >
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+          <line x1="12" y1="19" x2="12" y2="23"></line>
+          <line x1="8" y1="23" x2="16" y2="23"></line>
+        </svg>
+      </div>
+    )
+  }
 
   const startListening = () => {
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition
-    const r = new SR()
-    r.continuous = false
-    r.interimResults = true
-    r.lang = "en-US"
-    r.onresult = (e: SpeechRecognitionEvent) => {
-      const result = e.results[e.results.length - 1]
-      const text = result[0].transcript
-      setTranscript(text)
-      if (result.isFinal) {
-        setState("processing")
-        onTranscript(text)
-        setTranscript("")
-        setState("idle")
+    try {
+      // Get Speech Recognition API
+      const SRConstructor =
+        (window as any).SpeechRecognition ||
+        (window as any).webkitSpeechRecognition
+
+      if (!SRConstructor) {
+        console.error("Speech Recognition not available in this browser")
+        alert("Voice input not supported in your browser. Try Chrome or Edge.")
+        return
       }
-    }
-    r.onerror = () => {
+
+      const r = new SRConstructor()
+
+      // Mobile optimizations
+      if (isMobile) {
+        r.continuous = false
+        r.interimResults = false
+      } else {
+        r.continuous = false
+        r.interimResults = true
+      }
+
+      r.lang = "en-US"
+
+      r.onresult = (e: any) => {
+        try {
+          if (!e.results || e.results.length === 0) {
+            console.log("No results from speech recognition")
+            return
+          }
+
+          const result = e.results[e.results.length - 1]
+          if (!result || !result[0]) return
+
+          const text = result[0].transcript
+          console.log("Transcript:", text, "isFinal:", result.isFinal)
+          setTranscript(text)
+
+          if (result.isFinal) {
+            setState("processing")
+            onTranscript(text)
+            setTranscript("")
+            setState("idle")
+          }
+        } catch (err) {
+          console.error("Error processing speech result:", err)
+          setState("idle")
+        }
+      }
+
+      r.onerror = (e: any) => {
+        console.error("Speech recognition error:", e.error)
+        setState("idle")
+        setTranscript("")
+
+        // Handle specific errors
+        if (e.error === "no-speech") {
+          console.warn("No speech detected. Try speaking again.")
+        } else if (e.error === "network") {
+          console.error("Network error. Check your connection.")
+        } else if (e.error === "permission-denied") {
+          console.error(
+            "Microphone permission denied. Please allow microphone access.",
+          )
+        } else if (e.error === "aborted") {
+          console.log("Speech recognition was aborted")
+        }
+      }
+
+      r.onend = () => {
+        if (state === "listening") setState("idle")
+      }
+
+      recognitionRef.current = r
+      r.start()
+      setState("listening")
+      console.log("Speech recognition started")
+    } catch (err) {
+      console.error("Failed to start speech recognition:", err)
+      alert("Failed to start voice input. Please try again.")
       setState("idle")
-      setTranscript("")
     }
-    r.onend = () => {
-      if (state === "listening") setState("idle")
-    }
-    recognitionRef.current = r
-    r.start()
-    setState("listening")
   }
 
   const stopListening = () => {
