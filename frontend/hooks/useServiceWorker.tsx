@@ -8,7 +8,7 @@ export function ServiceWorkerProvider() {
 
   useEffect(() => {
     // Check if app is already installed
-    if (window.navigator.standalone === true) {
+    if ((window.navigator as any).standalone === true) {
       setIsInstalled(true)
     }
 

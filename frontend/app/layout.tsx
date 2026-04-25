@@ -136,16 +136,25 @@ export default function RootLayout({
         <meta name="theme-color" content="#050508" />
         <meta name="mobile-web-app-capable" content="yes" />
         {/* WhatsApp Sharing Optimization */}
-        <meta property="og:image" content="https://cerebra.ai/cerebra-logo.png" />
+        <meta
+          property="og:image"
+          content="https://cerebra.ai/cerebra-logo.png"
+        />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:image:type" content="image/png" />
         <meta property="og:image:alt" content="Cerebra Knowledge Network" />
         {/* Additional sharing optimization */}
-        <meta name="description" content="Explore the universe of human knowledge as a living 3D neural network. An immersive experience of interconnected information." />
+        <meta
+          name="description"
+          content="Explore the universe of human knowledge as a living 3D neural network. An immersive experience of interconnected information."
+        />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta
+          name="apple-mobile-web-app-status-bar-style"
+          content="black-translucent"
+        />
         <meta name="apple-mobile-web-app-title" content="Cerebra" />
       </head>
       <body suppressHydrationWarning>

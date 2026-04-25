@@ -18,6 +18,7 @@ WhatsApp sharing has been optimized with the following:
 ### Image Requirements
 
 **Current Image:** `cerebra-logo.png`
+
 - **Dimensions:** 1200x630 pixels (optimal for social sharing)
 - **Format:** PNG
 - **Size:** < 5MB
@@ -43,18 +44,21 @@ WhatsApp sharing has been optimized with the following:
 ## Testing WhatsApp Sharing
 
 ### Method 1: WhatsApp Web
+
 1. Open WhatsApp Web
 2. Click share button in chat
 3. Paste link: `https://cerebra.ai`
 4. Verify preview shows correct image
 
 ### Method 2: Mobile App
+
 1. Open WhatsApp on mobile
 2. Copy/paste link in chat
 3. Preview should auto-load
 4. Tap to expand preview
 
 ### Method 3: Open Graph Debugger
+
 - **Facebook Debugger:** https://developers.facebook.com/tools/debug/og/object
 - **LinkedIn Debugger:** https://www.linkedin.com/feed/debug/posts/
 - Paste URL and refresh to see parsed tags
@@ -97,6 +101,7 @@ Twitter Card (Fallback):
    - Readable on small screens
 
 ### Current Images Used:
+
 - **Primary:** `/cerebra-logo.png` (1200x630)
 - **Fallback:** `/android-chrome-512x512.png` (512x512)
 - **Apple:** `/apple-touch-icon.png` (180x180)
@@ -116,10 +121,11 @@ Twitter Card (Fallback):
    - Or use WhatsApp Web for fresh fetch
 
 3. **Verify Meta Tags**
+
    ```bash
    # Using curl to check headers
    curl -I https://cerebra.ai/
-   
+
    # Check full HTML for og: tags
    curl https://cerebra.ai/ | grep "og:"
    ```
@@ -138,6 +144,7 @@ Twitter Card (Fallback):
 ### Multiple Images Issue
 
 If multiple images show in preview:
+
 1. Only first `og:image` is used
 2. Remove duplicate og:image tags
 3. Twitter card image is fallback only
@@ -150,7 +157,7 @@ If you need dynamic sharing based on route:
 // Create dynamic metadata
 export async function generateMetadata(
   { params }: Props,
-  parent: ResolvingMetadata
+  parent: ResolvingMetadata,
 ): Promise<Metadata> {
   return {
     openGraph: {
