@@ -23,9 +23,11 @@ const DOMAIN_LABELS: Record<Domain, string> = {
 export default function DomainLegend() {
   const [expanded, setExpanded] = useState(false)
   const graph = useStore((s) => s.graph)
+  const chatOpen = useStore((s) => s.chatOpen)
   const setHighlightedNodes = useStore((s) => s.setHighlightedNodes)
   const isMobile = useIsMobile()
 
+  if (isMobile && chatOpen) return null
   if (!graph) return null
 
   const domainCounts = graph.nodes.reduce<Record<string, number>>(

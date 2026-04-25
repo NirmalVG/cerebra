@@ -173,40 +173,42 @@ export default function ChatOverlay() {
   return (
     <>
       {/* ── Toggle button ───────────────────────── */}
-      <motion.button
-        onClick={toggleChat}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        style={{
-          position: "fixed",
-          bottom: isMobile
-            ? "max(14px, env(safe-area-inset-bottom))"
-            : "24px",
-          right: isMobile ? "12px" : "24px",
-          zIndex: 80,
-          background: chatOpen
-            ? "rgba(157, 78, 221, 0.3)"
-            : "rgba(157, 78, 221, 0.15)",
-          border: "1px solid rgba(157, 78, 221, 0.5)",
-          borderRadius: "50px",
-          padding: isMobile ? "12px 20px" : "10px 18px",
-          color: "#c084fc",
-          fontSize: isMobile ? "14px" : "13px",
-          fontWeight: 600,
-          cursor: "pointer",
-          backdropFilter: "blur(12px)",
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
-          letterSpacing: "0.02em",
-          minHeight: isMobile ? "44px" : undefined,
-          maxWidth: isMobile ? "calc(100vw - 156px)" : undefined,
-          whiteSpace: "nowrap",
-        }}
-      >
-        <BrainIcon />
-        {chatOpen ? "Close" : "Ask Cerebra"}
-      </motion.button>
+      {!(isMobile && chatOpen) && (
+        <motion.button
+          onClick={toggleChat}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          style={{
+            position: "fixed",
+            bottom: isMobile
+              ? "max(14px, env(safe-area-inset-bottom))"
+              : "24px",
+            right: isMobile ? "12px" : "24px",
+            zIndex: 80,
+            background: chatOpen
+              ? "rgba(157, 78, 221, 0.3)"
+              : "rgba(157, 78, 221, 0.15)",
+            border: "1px solid rgba(157, 78, 221, 0.5)",
+            borderRadius: "50px",
+            padding: isMobile ? "12px 20px" : "10px 18px",
+            color: "#c084fc",
+            fontSize: isMobile ? "14px" : "13px",
+            fontWeight: 600,
+            cursor: "pointer",
+            backdropFilter: "blur(12px)",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            letterSpacing: "0.02em",
+            minHeight: isMobile ? "44px" : undefined,
+            maxWidth: isMobile ? "calc(100vw - 156px)" : undefined,
+            whiteSpace: "nowrap",
+          }}
+        >
+          <BrainIcon />
+          {chatOpen ? "Close" : "Ask Cerebra"}
+        </motion.button>
+      )}
 
       {/* ── Chat panel ──────────────────────────── */}
       <AnimatePresence>
@@ -309,14 +311,17 @@ export default function ChatOverlay() {
                   </span>
                 </div>
                 <button
-                  onClick={() =>
-                    setMessages([
-                      {
-                        id: "welcome",
-                        role: "assistant",
-                        text: "I am Cerebra. Ask me anything across science, history, philosophy, or art. I'll find the connections others miss.",
-                      },
-                    ])
+                  onClick={
+                    isMobile
+                      ? toggleChat
+                      : () =>
+                          setMessages([
+                            {
+                              id: "welcome",
+                              role: "assistant",
+                              text: "I am Cerebra. Ask me anything across science, history, philosophy, or art. I'll find the connections others miss.",
+                            },
+                          ])
                   }
                   style={{
                     background: "none",
@@ -328,7 +333,7 @@ export default function ChatOverlay() {
                     padding: "4px 6px",
                   }}
                 >
-                  clear
+                  {isMobile ? "close" : "clear"}
                 </button>
               </div>
 

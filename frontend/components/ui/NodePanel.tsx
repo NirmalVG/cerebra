@@ -10,26 +10,45 @@ import { useIsMobile } from "@/hooks/useIsMobile"
 export default function NodePanel() {
   const selectedNode = useStore((s) => s.selectedNode)
   const setSelectedNode = useStore((s) => s.setSelectedNode)
-  const [summary, setSummary] = useState<string>("")
-  const [loading, setLoading] = useState(false)
+  const [summaryResult, setSummaryResult] = useState<{
+    nodeId: string
+    summary: string
+  } | null>(null)
   const isMobile = useIsMobile()
+  const selectedNodeId = selectedNode?.id
 
   useEffect(() => {
-    if (!selectedNode) {
-      setSummary("")
-      return
+    if (!selectedNodeId) return
+    let cancelled = false
+
+    fetchNodeSummary(selectedNodeId)
+      .then((summary) => {
+        if (!cancelled) setSummaryResult({ nodeId: selectedNodeId, summary })
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setSummaryResult({
+            nodeId: selectedNodeId,
+            summary: "Summary unavailable.",
+          })
+        }
+      })
+
+    return () => {
+      cancelled = true
     }
-    setLoading(true)
-    setSummary("")
-    fetchNodeSummary(selectedNode.id)
-      .then(setSummary)
-      .catch(() => setSummary("Summary unavailable."))
-      .finally(() => setLoading(false))
-  }, [selectedNode?.id])
+  }, [selectedNodeId])
 
   const color = selectedNode
     ? (DOMAIN_COLORS[selectedNode.domain] ?? "#ffffff")
     : "#ffffff"
+  const summary =
+    selectedNodeId && summaryResult?.nodeId === selectedNodeId
+      ? summaryResult.summary
+      : ""
+  const loading = Boolean(
+    selectedNodeId && summaryResult?.nodeId !== selectedNodeId,
+  )
 
   // ── Desktop: slide in from left, vertically centred
   const desktopStyles = {
@@ -42,22 +61,28 @@ export default function NodePanel() {
     maxHeight: "70vh",
   }
 
-  // ── Mobile: bottom sheet, full width
+  // ── Mobile: centered modal
   const mobileStyles = {
     position: "fixed" as const,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    zIndex: 60,
-    width: "100%",
-    maxHeight: "min(72dvh, 620px)",
+    top: "50%",
+    left: "50%",
+    zIndex: 90,
+    width: "calc(100vw - 32px)",
+    maxWidth: "390px",
+    maxHeight: "min(74dvh, 620px)",
   }
 
   const panelStyles = isMobile ? mobileStyles : desktopStyles
 
-  const initial = isMobile ? { y: "100%", opacity: 0 } : { x: -40, opacity: 0 }
-  const animate = isMobile ? { y: 0, opacity: 1 } : { x: 0, opacity: 1 }
-  const exit = isMobile ? { y: "100%", opacity: 0 } : { x: -40, opacity: 0 }
+  const initial = isMobile
+    ? { x: "-50%", y: "-46%", opacity: 0, scale: 0.96 }
+    : { x: -40, opacity: 0 }
+  const animate = isMobile
+    ? { x: "-50%", y: "-50%", opacity: 1, scale: 1 }
+    : { x: 0, opacity: 1 }
+  const exit = isMobile
+    ? { x: "-50%", y: "-46%", opacity: 0, scale: 0.96 }
+    : { x: -40, opacity: 0 }
 
   return (
     <AnimatePresence>
@@ -72,7 +97,7 @@ export default function NodePanel() {
             style={{
               position: "fixed",
               inset: 0,
-              zIndex: 50,
+              zIndex: isMobile ? 85 : 50,
               background: isMobile ? "rgba(0,0,0,0.4)" : "transparent",
             }}
           />
@@ -87,34 +112,13 @@ export default function NodePanel() {
               ...panelStyles,
               background: "rgba(5, 5, 15, 0.96)",
               border: `1px solid ${color}33`,
-              borderRadius: isMobile ? "20px 20px 0 0" : "16px",
+              borderRadius: "16px",
               backdropFilter: "blur(20px)",
               overflow: "hidden",
               display: "flex",
               flexDirection: "column",
             }}
           >
-            {/* Mobile drag handle */}
-            {isMobile && (
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  padding: "10px 0 4px",
-                  flexShrink: 0,
-                }}
-              >
-                <div
-                  style={{
-                    width: "36px",
-                    height: "4px",
-                    borderRadius: "99px",
-                    background: "rgba(255,255,255,0.15)",
-                  }}
-                />
-              </div>
-            )}
-
             {/* Color accent bar */}
             <div
               style={{
