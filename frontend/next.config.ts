@@ -1,7 +1,45 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
-  /* config options here */
-};
+  reactStrictMode: true,
+  compress: true,
+  optimizeFonts: true,
+  headers: async () => [
+    {
+      source: "/:path*",
+      headers: [
+        {
+          key: "X-Content-Type-Options",
+          value: "nosniff",
+        },
+        {
+          key: "X-Frame-Options",
+          value: "DENY",
+        },
+        {
+          key: "Referrer-Policy",
+          value: "strict-origin-when-cross-origin",
+        },
+        {
+          key: "Permissions-Policy",
+          value: "camera=(), microphone=(), geolocation=()",
+        },
+      ],
+    },
+    {
+      source: "/sw.js",
+      headers: [
+        {
+          key: "Cache-Control",
+          value: "no-cache, max-age=0",
+        },
+        {
+          key: "Content-Type",
+          value: "application/javascript; charset=utf-8",
+        },
+      ],
+    },
+  ],
+}
 
-export default nextConfig;
+export default nextConfig

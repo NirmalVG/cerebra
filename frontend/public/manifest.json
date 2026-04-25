@@ -1,0 +1,84 @@
+{
+  "name": "Cerebra — Knowledge Visualized",
+  "short_name": "Cerebra",
+  "description": "Explore the universe of human knowledge as a living 3D neural network. An immersive experience of interconnected information.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#050508",
+  "background_color": "#050508",
+  "categories": ["education", "productivity"],
+  "screenshots": [
+    {
+      "src": "/cerebra-logo.png",
+      "sizes": "512x512",
+      "form_factor": "wide",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "form_factor": "narrow",
+      "type": "image/png"
+    }
+  ],
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/cerebra-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Explore Knowledge",
+      "short_name": "Explore",
+      "description": "Start exploring the knowledge network",
+      "url": "/explore",
+      "icons": [
+        {
+          "src": "/android-chrome-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "share_target": {
+    "action": "/api/query",
+    "method": "POST",
+    "enctype": "application/x-www-form-urlencoded",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "preferRelatedApplications": false,
+  "related_applications": []
+}

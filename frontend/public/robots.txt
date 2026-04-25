@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Allow: /explore
+Disallow: /api
+
+User-agent: Googlebot
+Allow: /
+Allow: /explore
+
+User-agent: Bingbot
+Allow: /
+Allow: /explore
+
+Sitemap: https://cerebra.ai/sitemap.xml

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<browserconfig>
+  <msapplication>
+    <tile>
+      <square70x70logo src="/android-chrome-192x192.png" />
+      <square150x150logo src="/android-chrome-192x192.png" />
+      <square310x310logo src="/android-chrome-512x512.png" />
+      <wide310x150logo src="/android-chrome-512x512.png" />
+      <TileColor>#050508</TileColor>
+    </tile>
+    <notification>
+      <polling-uri src="/pollinguri.xml" />
+      <polling-uri2 src="/pollinguri2.xml" />
+      <polling-uri3 src="/pollinguri3.xml" />
+      <polling-uri4 src="/pollinguri4.xml" />
+      <polling-uri5 src="/pollinguri5.xml" />
+      <frequency>30</frequency>
+      <cycle>1</cycle>
+    </notification>
+  </msapplication>
+</browserconfig>
