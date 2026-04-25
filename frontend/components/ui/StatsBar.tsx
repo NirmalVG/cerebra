@@ -1,11 +1,12 @@
-// components/ui/StatsBar.tsx
 "use client"
 
 import { useStore } from "@/store/useStore"
+import { useIsMobile } from "@/hooks/useIsMobile"
 
 export default function StatsBar() {
   const graph = useStore((s) => s.graph)
   const highlightedNodes = useStore((s) => s.highlightedNodes)
+  const isMobile = useIsMobile()
 
   if (!graph) return null
 
@@ -13,50 +14,40 @@ export default function StatsBar() {
   const edgeCount = graph.edges.length
   const activeCount = highlightedNodes.size
 
+  // On mobile: compact pill in bottom-left above the legend button
+  // On desktop: top-left stats bar
   return (
     <div
       style={{
         position: "fixed",
-        top: "24px",
+        top: isMobile ? undefined : "24px",
+        bottom: isMobile ? "76px" : undefined,
         left: "24px",
         zIndex: 80,
-        display: "flex",
-        gap: "16px",
-        alignItems: "center",
       }}
     >
       <div
         style={{
-          background: "rgba(5, 5, 15, 0.75)",
-          border: "1px solid rgba(255,255,255,0.06)",
+          background: "rgba(5, 5, 15, 0.80)",
+          border: "1px solid rgba(255,255,255,0.07)",
           borderRadius: "8px",
-          padding: "6px 12px",
+          padding: isMobile ? "5px 10px" : "6px 12px",
           backdropFilter: "blur(12px)",
           display: "flex",
-          gap: "14px",
+          gap: isMobile ? "10px" : "14px",
           alignItems: "center",
         }}
       >
         <Stat
           label="nodes"
           value={activeCount > 0 ? `${activeCount}/${nodeCount}` : nodeCount}
+          mobile={isMobile}
         />
-        <div
-          style={{
-            width: "1px",
-            height: "14px",
-            background: "rgba(255,255,255,0.08)",
-          }}
-        />
-        <Stat label="edges" value={edgeCount} />
-        <div
-          style={{
-            width: "1px",
-            height: "14px",
-            background: "rgba(255,255,255,0.08)",
-          }}
-        />
-        <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+        <Divider />
+        <Stat label="edges" value={edgeCount} mobile={isMobile} />
+        <Divider />
+        {/* Live indicator */}
+        <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
           <div
             style={{
               width: "5px",
@@ -66,27 +57,47 @@ export default function StatsBar() {
               boxShadow: "0 0 6px #22c55e",
             }}
           />
-          <span
-            style={{ color: "#444", fontSize: "10px", letterSpacing: "0.06em" }}
-          >
-            LIVE
-          </span>
+          {!isMobile && (
+            <span
+              style={{
+                color: "#444",
+                fontSize: "10px",
+                letterSpacing: "0.06em",
+              }}
+            >
+              LIVE
+            </span>
+          )}
         </div>
       </div>
     </div>
   )
 }
 
-function Stat({ label, value }: { label: string; value: number | string }) {
+function Stat({
+  label,
+  value,
+  mobile,
+}: {
+  label: string
+  value: number | string
+  mobile: boolean
+}) {
   return (
-    <div style={{ display: "flex", alignItems: "baseline", gap: "4px" }}>
-      <span style={{ color: "#f8f9fa", fontSize: "13px", fontWeight: 600 }}>
-        {value}
+    <div style={{ display: "flex", alignItems: "baseline", gap: "3px" }}>
+      <span
+        style={{
+          color: "#f8f9fa",
+          fontSize: mobile ? "11px" : "13px",
+          fontWeight: 600,
+        }}
+      >
+        {typeof value === "number" ? value.toLocaleString() : value}
       </span>
       <span
         style={{
           color: "#444",
-          fontSize: "10px",
+          fontSize: "9px",
           letterSpacing: "0.06em",
           textTransform: "uppercase",
         }}
@@ -94,5 +105,17 @@ function Stat({ label, value }: { label: string; value: number | string }) {
         {label}
       </span>
     </div>
+  )
+}
+
+function Divider() {
+  return (
+    <div
+      style={{
+        width: "1px",
+        height: "12px",
+        background: "rgba(255,255,255,0.07)",
+      }}
+    />
   )
 }

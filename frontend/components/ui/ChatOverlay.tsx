@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useStore } from "@/store/useStore"
 import { streamQuery } from "@/lib/api"
+import { useIsMobile } from "@/hooks/useIsMobile"
 
 interface Message {
   id: string
@@ -11,8 +12,8 @@ interface Message {
   text: string
   nodeIds?: string[]
   streaming?: boolean
-  isStatus?: boolean // "Researching unknown territory..."
-  isDiscovery?: boolean // "✦ New concept discovered"
+  isStatus?: boolean
+  isDiscovery?: boolean
 }
 
 export default function ChatOverlay() {
@@ -22,6 +23,7 @@ export default function ChatOverlay() {
   const setSelectedNode = useStore((s) => s.setSelectedNode)
   const addDynamicNode = useStore((s) => s.addDynamicNode)
   const graph = useStore((s) => s.graph)
+  const isMobile = useIsMobile()
 
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -36,12 +38,10 @@ export default function ChatOverlay() {
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // Auto-scroll on new content
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
-  // Focus input when panel opens
   useEffect(() => {
     if (chatOpen) setTimeout(() => inputRef.current?.focus(), 300)
   }, [chatOpen])
@@ -50,7 +50,6 @@ export default function ChatOverlay() {
     if (!userText.trim() || loading) return
     setLoading(true)
 
-    // Add user message
     setMessages((prev) => [
       ...prev,
       {
@@ -60,7 +59,6 @@ export default function ChatOverlay() {
       },
     ])
 
-    // Placeholder assistant message — filled by streaming
     const assistantId = (Date.now() + 1).toString()
     setMessages((prev) => [
       ...prev,
@@ -75,8 +73,6 @@ export default function ChatOverlay() {
     try {
       await streamQuery(
         userText,
-
-        // onNodes — highlight in brain immediately
         (ids, _scores) => {
           setHighlightedNodes(ids)
           if (ids.length > 0 && graph) {
@@ -84,8 +80,6 @@ export default function ChatOverlay() {
             if (topNode) setSelectedNode(topNode)
           }
         },
-
-        // onChunk — stream text into assistant bubble
         (chunk) => {
           setMessages((prev) =>
             prev.map((m) =>
@@ -95,8 +89,6 @@ export default function ChatOverlay() {
             ),
           )
         },
-
-        // onStatus — interim status message while researching
         (message) => {
           setMessages((prev) =>
             prev.map((m) =>
@@ -106,26 +98,20 @@ export default function ChatOverlay() {
             ),
           )
         },
-
-        // onNewNode — dynamic node spawned in the brain
         (node) => {
           addDynamicNode(node)
-          // Prepend discovery notice before the streamed analysis
           setMessages((prev) =>
             prev.map((m) =>
               m.id === assistantId
                 ? {
                     ...m,
                     text: `✦ New concept discovered: ${node.title}\n\n`,
-                    isStatus: false,
                     isDiscovery: true,
                   }
                 : m,
             ),
           )
         },
-
-        // onDone
         () => {
           setMessages((prev) =>
             prev.map((m) =>
@@ -137,15 +123,14 @@ export default function ChatOverlay() {
           setLoading(false)
         },
       )
-    } catch (err) {
+    } catch {
       setMessages((prev) =>
         prev.map((m) =>
           m.id === assistantId
             ? {
                 ...m,
-                text: "Connection error — is the backend running on port 8000?",
+                text: "Connection error — is the backend running?",
                 streaming: false,
-                isStatus: false,
               }
             : m,
         ),
@@ -156,22 +141,38 @@ export default function ChatOverlay() {
 
   const handleSubmit = async () => {
     if (!input.trim() || loading) return
-    const userText = input.trim()
+    const t = input.trim()
     setInput("")
-    await runQuery(userText)
+    await runQuery(t)
   }
 
   const handleVoiceTranscript = async (text: string) => {
     setInput(text)
-    // Short delay so user sees what was transcribed before submission
     await new Promise((r) => setTimeout(r, 400))
     setInput("")
     await runQuery(text)
   }
 
+  // Panel dimensions
+  const panelWidth = isMobile ? "100%" : "420px"
+  const panelHeight = isMobile ? "82dvh" : "580px"
+  const panelRight = isMobile ? "0" : "24px"
+  const panelBottom = isMobile ? "0" : "76px"
+  const panelRadius = isMobile ? "20px 20px 0 0" : "16px"
+
+  const panelInitial = isMobile
+    ? { y: "100%", opacity: 1 }
+    : { y: 20, opacity: 0, scale: 0.97 }
+  const panelAnimate = isMobile
+    ? { y: 0, opacity: 1 }
+    : { y: 0, opacity: 1, scale: 1 }
+  const panelExit = isMobile
+    ? { y: "100%", opacity: 1 }
+    : { y: 20, opacity: 0, scale: 0.97 }
+
   return (
     <>
-      {/* ── Toggle button ─────────────────────────── */}
+      {/* ── Toggle button ───────────────────────── */}
       <motion.button
         onClick={toggleChat}
         whileHover={{ scale: 1.05 }}
@@ -186,9 +187,9 @@ export default function ChatOverlay() {
             : "rgba(157, 78, 221, 0.15)",
           border: "1px solid rgba(157, 78, 221, 0.5)",
           borderRadius: "50px",
-          padding: "10px 18px",
+          padding: isMobile ? "12px 20px" : "10px 18px",
           color: "#c084fc",
-          fontSize: "13px",
+          fontSize: isMobile ? "14px" : "13px",
           fontWeight: 600,
           cursor: "pointer",
           backdropFilter: "blur(12px)",
@@ -202,181 +203,218 @@ export default function ChatOverlay() {
         {chatOpen ? "Close" : "Ask Cerebra"}
       </motion.button>
 
-      {/* ── Chat panel ────────────────────────────── */}
+      {/* ── Chat panel ──────────────────────────── */}
       <AnimatePresence>
         {chatOpen && (
-          <motion.div
-            initial={{ y: 20, opacity: 0, scale: 0.97 }}
-            animate={{ y: 0, opacity: 1, scale: 1 }}
-            exit={{ y: 20, opacity: 0, scale: 0.97 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            style={{
-              position: "fixed",
-              bottom: "76px",
-              right: "24px",
-              zIndex: 70,
-              width: "420px",
-              height: "460px",
-              background: "rgba(5, 5, 15, 0.94)",
-              border: "1px solid rgba(157, 78, 221, 0.25)",
-              borderRadius: "16px",
-              backdropFilter: "blur(20px)",
-              display: "flex",
-              flexDirection: "column",
-              overflow: "hidden",
-            }}
-          >
-            {/* Header */}
-            <div
-              style={{
-                padding: "14px 16px",
-                borderBottom: "1px solid rgba(157, 78, 221, 0.15)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                flexShrink: 0,
-              }}
-            >
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "8px" }}
-              >
-                <motion.div
-                  animate={{ opacity: [0.6, 1, 0.6] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  style={{
-                    width: "8px",
-                    height: "8px",
-                    borderRadius: "50%",
-                    background: "#9D4EDD",
-                    boxShadow: "0 0 8px #9D4EDD",
-                  }}
-                />
-                <span
-                  style={{
-                    color: "#c084fc",
-                    fontSize: "12px",
-                    fontWeight: 600,
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  Cerebra
-                </span>
-              </div>
-
-              {/* Clear conversation */}
-              <button
-                onClick={() =>
-                  setMessages([
-                    {
-                      id: "welcome",
-                      role: "assistant",
-                      text: "I am Cerebra. Ask me anything across science, history, philosophy, or art. I'll find the connections others miss.",
-                    },
-                  ])
-                }
+          <>
+            {/* Mobile full-screen backdrop */}
+            {isMobile && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={toggleChat}
                 style={{
-                  background: "none",
-                  border: "none",
-                  color: "#444",
-                  fontSize: "11px",
-                  cursor: "pointer",
-                  letterSpacing: "0.04em",
-                  padding: "2px 6px",
+                  position: "fixed",
+                  inset: 0,
+                  zIndex: 69,
+                  background: "rgba(0,0,0,0.5)",
                 }}
-              >
-                clear
-              </button>
-            </div>
+              />
+            )}
 
-            {/* Messages */}
-            <div
+            <motion.div
+              initial={panelInitial}
+              animate={panelAnimate}
+              exit={panelExit}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
               style={{
-                flex: 1,
-                overflowY: "auto",
-                padding: "16px",
+                position: "fixed",
+                bottom: panelBottom,
+                right: panelRight,
+                zIndex: 70,
+                width: panelWidth,
+                height: panelHeight,
+                background: "rgba(5, 5, 15, 0.96)",
+                border: "1px solid rgba(157, 78, 221, 0.25)",
+                borderRadius: panelRadius,
+                backdropFilter: "blur(20px)",
                 display: "flex",
                 flexDirection: "column",
-                gap: "12px",
+                overflow: "hidden",
               }}
             >
-              {messages.map((msg) => (
-                <MessageBubble key={msg.id} message={msg} />
-              ))}
-              <div ref={bottomRef} />
-            </div>
+              {/* Mobile drag handle */}
+              {isMobile && (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    padding: "12px 0 4px",
+                    flexShrink: 0,
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "36px",
+                      height: "4px",
+                      borderRadius: "99px",
+                      background: "rgba(255,255,255,0.15)",
+                    }}
+                  />
+                </div>
+              )}
 
-            {/* Input row */}
-            <div
-              style={{
-                padding: "12px",
-                borderTop: "1px solid rgba(157, 78, 221, 0.15)",
-                display: "flex",
-                gap: "8px",
-                alignItems: "center",
-                flexShrink: 0,
-              }}
-            >
-              <input
-                ref={inputRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) =>
-                  e.key === "Enter" && !e.shiftKey && handleSubmit()
-                }
-                placeholder="e.g. how does entropy relate to consciousness?"
-                disabled={loading}
+              {/* Header */}
+              <div
                 style={{
-                  flex: 1,
-                  background: "rgba(255,255,255,0.05)",
-                  border: "1px solid rgba(157, 78, 221, 0.25)",
-                  borderRadius: "8px",
-                  padding: "9px 12px",
-                  color: "#f8f9fa",
-                  fontSize: "12px",
-                  outline: "none",
-                  fontFamily: "inherit",
-                  opacity: loading ? 0.5 : 1,
-                  transition: "border-color 0.2s",
-                }}
-                onFocus={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(157, 78, 221, 0.5)"
-                }}
-                onBlur={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(157, 78, 221, 0.25)"
-                }}
-              />
-
-              {/* Voice button */}
-              <VoiceButton
-                onTranscript={handleVoiceTranscript}
-                disabled={loading}
-              />
-
-              {/* Send button */}
-              <motion.button
-                onClick={handleSubmit}
-                whileTap={{ scale: 0.92 }}
-                disabled={loading || !input.trim()}
-                style={{
-                  background:
-                    loading || !input.trim()
-                      ? "rgba(157, 78, 221, 0.12)"
-                      : "rgba(157, 78, 221, 0.4)",
-                  border: "1px solid rgba(157, 78, 221, 0.4)",
-                  borderRadius: "8px",
-                  padding: "9px 14px",
-                  color: loading || !input.trim() ? "#555" : "#c084fc",
-                  cursor: loading || !input.trim() ? "not-allowed" : "pointer",
-                  fontSize: "15px",
-                  transition: "all 0.2s",
+                  padding: isMobile ? "10px 16px" : "14px 16px",
+                  borderBottom: "1px solid rgba(157, 78, 221, 0.15)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
                   flexShrink: 0,
                 }}
               >
-                {loading ? <LoadingDots /> : "↑"}
-              </motion.button>
-            </div>
-          </motion.div>
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
+                  <motion.div
+                    animate={{ opacity: [0.6, 1, 0.6] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    style={{
+                      width: "8px",
+                      height: "8px",
+                      borderRadius: "50%",
+                      background: "#9D4EDD",
+                      boxShadow: "0 0 8px #9D4EDD",
+                    }}
+                  />
+                  <span
+                    style={{
+                      color: "#c084fc",
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      letterSpacing: "0.08em",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    Cerebra
+                  </span>
+                </div>
+                <button
+                  onClick={() =>
+                    setMessages([
+                      {
+                        id: "welcome",
+                        role: "assistant",
+                        text: "I am Cerebra. Ask me anything across science, history, philosophy, or art. I'll find the connections others miss.",
+                      },
+                    ])
+                  }
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "#444",
+                    fontSize: "11px",
+                    cursor: "pointer",
+                    letterSpacing: "0.04em",
+                    padding: "4px 6px",
+                  }}
+                >
+                  clear
+                </button>
+              </div>
+
+              {/* Messages */}
+              <div
+                style={{
+                  flex: 1,
+                  overflowY: "auto",
+                  padding: "16px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "12px",
+                  WebkitOverflowScrolling: "touch",
+                }}
+              >
+                {messages.map((msg) => (
+                  <MessageBubble
+                    key={msg.id}
+                    message={msg}
+                    isMobile={isMobile}
+                  />
+                ))}
+                <div ref={bottomRef} />
+              </div>
+
+              {/* Input row */}
+              <div
+                style={{
+                  padding: isMobile ? "12px 12px 20px" : "12px",
+                  borderTop: "1px solid rgba(157, 78, 221, 0.15)",
+                  display: "flex",
+                  gap: "8px",
+                  alignItems: "center",
+                  flexShrink: 0,
+                  // Extra bottom padding on mobile for home bar
+                  paddingBottom: isMobile
+                    ? "max(20px, env(safe-area-inset-bottom))"
+                    : "12px",
+                }}
+              >
+                <input
+                  ref={inputRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) =>
+                    e.key === "Enter" && !e.shiftKey && handleSubmit()
+                  }
+                  placeholder="Ask anything..."
+                  disabled={loading}
+                  style={{
+                    flex: 1,
+                    background: "rgba(255,255,255,0.05)",
+                    border: "1px solid rgba(157, 78, 221, 0.25)",
+                    borderRadius: "8px",
+                    padding: isMobile ? "12px 14px" : "9px 12px",
+                    color: "#f8f9fa",
+                    fontSize: isMobile ? "16px" : "12px", // ≥16px prevents iOS zoom
+                    outline: "none",
+                    fontFamily: "inherit",
+                    opacity: loading ? 0.5 : 1,
+                    WebkitAppearance: "none",
+                  }}
+                />
+                <VoiceButton
+                  onTranscript={handleVoiceTranscript}
+                  disabled={loading}
+                />
+                <motion.button
+                  onClick={handleSubmit}
+                  whileTap={{ scale: 0.92 }}
+                  disabled={loading || !input.trim()}
+                  style={{
+                    background:
+                      loading || !input.trim()
+                        ? "rgba(157, 78, 221, 0.12)"
+                        : "rgba(157, 78, 221, 0.4)",
+                    border: "1px solid rgba(157, 78, 221, 0.4)",
+                    borderRadius: "8px",
+                    padding: isMobile ? "12px 16px" : "9px 14px",
+                    color: loading || !input.trim() ? "#555" : "#c084fc",
+                    cursor:
+                      loading || !input.trim() ? "not-allowed" : "pointer",
+                    fontSize: "15px",
+                    transition: "all 0.2s",
+                    flexShrink: 0,
+                  }}
+                >
+                  {loading ? <LoadingDots /> : "↑"}
+                </motion.button>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </>
@@ -384,27 +422,24 @@ export default function ChatOverlay() {
 }
 
 // ── Message Bubble ─────────────────────────────────────────
-function MessageBubble({ message }: { message: Message }) {
+function MessageBubble({
+  message,
+  isMobile,
+}: {
+  message: Message
+  isMobile: boolean
+}) {
   const isUser = message.role === "user"
 
   if (message.isStatus) {
     return (
       <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          padding: "4px 0",
-        }}
+        style={{ display: "flex", justifyContent: "center", padding: "4px 0" }}
       >
         <motion.span
           animate={{ opacity: [0.4, 1, 0.4] }}
           transition={{ duration: 1.5, repeat: Infinity }}
-          style={{
-            color: "#9D4EDD",
-            fontSize: "11px",
-            fontStyle: "italic",
-            letterSpacing: "0.04em",
-          }}
+          style={{ color: "#9D4EDD", fontSize: "11px", fontStyle: "italic" }}
         >
           {message.text}
         </motion.span>
@@ -453,13 +488,25 @@ function MessageBubble({ message }: { message: Message }) {
             isUser ? "rgba(157, 78, 221, 0.35)" : "rgba(255,255,255,0.07)"
           }`,
           borderRadius: isUser ? "12px 12px 2px 12px" : "2px 12px 12px 12px",
-          padding: isUser ? "9px 13px" : "13px 15px",
+          padding: isUser
+            ? isMobile
+              ? "11px 14px"
+              : "9px 13px"
+            : isMobile
+              ? "13px 16px"
+              : "13px 15px",
         }}
       >
         <p
           style={{
             color: isUser ? "#e9d5ff" : "#d0d4de",
-            fontSize: isUser ? "12.5px" : "13px",
+            fontSize: isMobile
+              ? isUser
+                ? "14px"
+                : "14px"
+              : isUser
+                ? "12.5px"
+                : "13px",
             lineHeight: isUser ? 1.6 : 1.85,
             margin: 0,
             whiteSpace: "pre-wrap",
@@ -467,8 +514,6 @@ function MessageBubble({ message }: { message: Message }) {
           }}
         >
           {message.text}
-
-          {/* Blinking cursor while streaming */}
           {message.streaming && message.text.length > 0 && (
             <motion.span
               animate={{ opacity: [1, 0] }}
@@ -478,8 +523,6 @@ function MessageBubble({ message }: { message: Message }) {
               ▋
             </motion.span>
           )}
-
-          {/* Pulsing dots when streaming but no text yet */}
           {message.streaming && message.text.length === 0 && <LoadingDots />}
         </p>
       </div>
@@ -488,11 +531,6 @@ function MessageBubble({ message }: { message: Message }) {
 }
 
 // ── Voice Button ───────────────────────────────────────────
-interface VoiceButtonProps {
-  onTranscript: (text: string) => void
-  disabled?: boolean
-}
-
 interface SpeechRecognitionEvent extends Event {
   results: SpeechRecognitionResultList
 }
@@ -514,12 +552,19 @@ declare global {
   }
 }
 
-function VoiceButton({ onTranscript, disabled }: VoiceButtonProps) {
+function VoiceButton({
+  onTranscript,
+  disabled,
+}: {
+  onTranscript: (t: string) => void
+  disabled?: boolean
+}) {
   const [state, setState] = useState<"idle" | "listening" | "processing">(
     "idle",
   )
   const [transcript, setTranscript] = useState("")
   const recognitionRef = useRef<SpeechRecognition | null>(null)
+  const isMobile = useIsMobile()
 
   const isSupported =
     typeof window !== "undefined" &&
@@ -529,16 +574,14 @@ function VoiceButton({ onTranscript, disabled }: VoiceButtonProps) {
 
   const startListening = () => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition
-    const recognition = new SR()
-    recognition.continuous = false
-    recognition.interimResults = true
-    recognition.lang = "en-US"
-
-    recognition.onresult = (e: SpeechRecognitionEvent) => {
+    const r = new SR()
+    r.continuous = false
+    r.interimResults = true
+    r.lang = "en-US"
+    r.onresult = (e: SpeechRecognitionEvent) => {
       const result = e.results[e.results.length - 1]
       const text = result[0].transcript
       setTranscript(text)
-
       if (result.isFinal) {
         setState("processing")
         onTranscript(text)
@@ -546,17 +589,15 @@ function VoiceButton({ onTranscript, disabled }: VoiceButtonProps) {
         setState("idle")
       }
     }
-
-    recognition.onerror = () => {
+    r.onerror = () => {
       setState("idle")
       setTranscript("")
     }
-    recognition.onend = () => {
+    r.onend = () => {
       if (state === "listening") setState("idle")
     }
-
-    recognitionRef.current = recognition
-    recognition.start()
+    recognitionRef.current = r
+    r.start()
     setState("listening")
   }
 
@@ -566,9 +607,10 @@ function VoiceButton({ onTranscript, disabled }: VoiceButtonProps) {
     setTranscript("")
   }
 
+  const btnSize = isMobile ? "42px" : "36px"
+
   return (
     <div style={{ position: "relative", flexShrink: 0 }}>
-      {/* Live transcript preview */}
       <AnimatePresence>
         {transcript && (
           <motion.div
@@ -600,11 +642,10 @@ function VoiceButton({ onTranscript, disabled }: VoiceButtonProps) {
       <motion.button
         onClick={state === "listening" ? stopListening : startListening}
         disabled={disabled || state === "processing"}
-        whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.92 }}
         style={{
-          width: "36px",
-          height: "36px",
+          width: btnSize,
+          height: btnSize,
           borderRadius: "50%",
           border: `1px solid ${
             state === "listening"
@@ -622,9 +663,9 @@ function VoiceButton({ onTranscript, disabled }: VoiceButtonProps) {
           position: "relative",
           opacity: disabled ? 0.4 : 1,
           transition: "all 0.2s",
+          flexShrink: 0,
         }}
       >
-        {/* Pulse ring while listening */}
         {state === "listening" && (
           <motion.div
             animate={{ scale: [1, 1.7, 1], opacity: [0.5, 0, 0.5] }}
@@ -637,7 +678,6 @@ function VoiceButton({ onTranscript, disabled }: VoiceButtonProps) {
             }}
           />
         )}
-
         {state === "listening" ? (
           <div
             style={{
@@ -649,8 +689,8 @@ function VoiceButton({ onTranscript, disabled }: VoiceButtonProps) {
           />
         ) : (
           <svg
-            width="14"
-            height="14"
+            width={isMobile ? "16" : "14"}
+            height={isMobile ? "16" : "14"}
             viewBox="0 0 24 24"
             fill="none"
             stroke={state === "processing" ? "#555" : "#9D4EDD"}

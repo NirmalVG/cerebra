@@ -4,17 +4,18 @@ import { useState, useRef } from "react"
 import { motion } from "framer-motion"
 import { useStore } from "@/store/useStore"
 import { KnowledgeNode } from "@/lib/types"
+import { useIsMobile } from "@/hooks/useIsMobile"
 
 export default function SearchBar() {
   const [query, setQuery] = useState("")
   const [results, setResults] = useState<KnowledgeNode[]>([])
   const [open, setOpen] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const isMobile = useIsMobile()
 
   const graph = useStore((s) => s.graph)
   const setSelectedNode = useStore((s) => s.setSelectedNode)
   const setHighlightedNodes = useStore((s) => s.setHighlightedNodes)
-  const setCameraTarget = useStore((s) => s.setCameraTarget)
 
   const handleSearch = (value: string) => {
     setQuery(value)
@@ -23,10 +24,7 @@ export default function SearchBar() {
       setHighlightedNodes([])
       return
     }
-
     const q = value.toLowerCase()
-
-    // Simple client-side search across title + tags + domain
     const matches = graph.nodes
       .filter(
         (n) =>
@@ -61,12 +59,13 @@ export default function SearchBar() {
     <div
       style={{
         position: "fixed",
-        top: "24px",
-        left: "50%",
-        transform: "translateX(-50%)",
+        top: isMobile ? "16px" : "24px",
+        left: isMobile ? "16px" : "50%",
+        right: isMobile ? "16px" : "auto",
+        transform: isMobile ? "none" : "translateX(-50%)",
         zIndex: 80,
-        width: "380px",
-        maxWidth: "calc(100vw - 48px)",
+        width: isMobile ? "auto" : "380px",
+        maxWidth: isMobile ? "none" : "calc(100vw - 48px)",
       }}
     >
       {/* Input */}
@@ -74,13 +73,12 @@ export default function SearchBar() {
         style={{
           display: "flex",
           alignItems: "center",
-          background: "rgba(5, 5, 15, 0.85)",
-          border: "1px solid rgba(157, 78, 221, 0.3)",
+          background: "rgba(5, 5, 15, 0.88)",
+          border: "1px solid rgba(157, 78, 221, 0.35)",
           borderRadius: open && results.length > 0 ? "12px 12px 0 0" : "12px",
-          padding: "10px 16px",
+          padding: isMobile ? "11px 14px" : "10px 16px",
           backdropFilter: "blur(20px)",
           gap: "10px",
-          transition: "border-color 0.2s",
         }}
       >
         {/* Search icon */}
@@ -91,6 +89,7 @@ export default function SearchBar() {
           fill="none"
           stroke="#9D4EDD"
           strokeWidth="2.5"
+          style={{ flexShrink: 0 }}
         >
           <circle cx="11" cy="11" r="8" />
           <path d="m21 21-4.35-4.35" />
@@ -111,8 +110,10 @@ export default function SearchBar() {
             border: "none",
             outline: "none",
             color: "#f8f9fa",
-            fontSize: "13px",
+            fontSize: isMobile ? "15px" : "13px",
             fontFamily: "inherit",
+            // Prevent iOS zoom on focus (font-size must be ≥16px or use this)
+            WebkitAppearance: "none",
           }}
         />
 
@@ -122,11 +123,12 @@ export default function SearchBar() {
             style={{
               background: "none",
               border: "none",
-              color: "#555",
+              color: "#666",
               cursor: "pointer",
-              fontSize: "14px",
-              padding: 0,
+              fontSize: "16px",
+              padding: "0 2px",
               lineHeight: 1,
+              flexShrink: 0,
             }}
           >
             ✕
@@ -140,7 +142,7 @@ export default function SearchBar() {
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
           style={{
-            background: "rgba(5, 5, 15, 0.95)",
+            background: "rgba(5, 5, 15, 0.97)",
             border: "1px solid rgba(157, 78, 221, 0.3)",
             borderTop: "1px solid rgba(157, 78, 221, 0.1)",
             borderRadius: "0 0 12px 12px",
@@ -157,7 +159,7 @@ export default function SearchBar() {
                 background: "transparent",
                 border: "none",
                 borderTop: i > 0 ? "1px solid rgba(255,255,255,0.04)" : "none",
-                padding: "10px 16px",
+                padding: isMobile ? "13px 16px" : "10px 16px",
                 display: "flex",
                 alignItems: "center",
                 gap: "10px",
@@ -173,7 +175,6 @@ export default function SearchBar() {
                   "transparent"
               }}
             >
-              {/* Domain dot */}
               <div
                 style={{
                   width: "8px",
@@ -183,13 +184,16 @@ export default function SearchBar() {
                   flexShrink: 0,
                 }}
               />
-              <div>
+              <div style={{ flex: 1, minWidth: 0 }}>
                 <p
                   style={{
                     color: "#f8f9fa",
-                    fontSize: "13px",
+                    fontSize: isMobile ? "14px" : "13px",
                     fontWeight: 500,
                     margin: 0,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
                   }}
                 >
                   {node.title}
@@ -198,7 +202,7 @@ export default function SearchBar() {
                   style={{
                     color: "#666",
                     fontSize: "10px",
-                    margin: "1px 0 0 0",
+                    margin: "2px 0 0",
                     textTransform: "uppercase",
                     letterSpacing: "0.06em",
                   }}

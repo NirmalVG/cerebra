@@ -1,4 +1,3 @@
-// app/explore/page.tsx
 "use client"
 
 import { useEffect, useRef } from "react"
@@ -20,10 +19,12 @@ import StatsBar from "@/components/ui/StatsBar"
 import LoadingScreen from "@/components/ui/LoadingScreen"
 import { useStore } from "@/store/useStore"
 import { fetchGraph } from "@/lib/api"
+import { useIsMobile } from "@/hooks/useIsMobile"
 
 export default function ExplorePage() {
   const setGraph = useStore((s) => s.setGraph)
   const orbitRef = useRef<any>(null)
+  const isMobile = useIsMobile()
 
   useEffect(() => {
     fetchGraph().then(setGraph).catch(console.error)
@@ -32,7 +33,6 @@ export default function ExplorePage() {
   const handleInteractStart = () => {
     if (orbitRef.current) orbitRef.current.autoRotate = false
   }
-
   const handleInteractEnd = () => {
     setTimeout(() => {
       if (orbitRef.current) orbitRef.current.autoRotate = true
@@ -40,15 +40,28 @@ export default function ExplorePage() {
   }
 
   return (
-    <div style={{ width: "100vw", height: "100vh", background: "#050508" }}>
-      {/* Loading screen — covers canvas until graph loads */}
+    <div
+      style={{
+        width: "100vw",
+        height: "100dvh", // dvh handles mobile browser chrome correctly
+        background: "#050508",
+        overflow: "hidden",
+        position: "relative",
+      }}
+    >
       <LoadingScreen />
 
-      {/* 3D Canvas */}
+      {/* ── 3D Canvas ─────────────────────────────── */}
       <Canvas
-        camera={{ position: [0, 0, 22], fov: 60, near: 0.1, far: 1000 }}
-        gl={{ antialias: true, alpha: false }}
-        dpr={[1, 2]}
+        camera={{
+          position: isMobile ? [0, 0, 28] : [0, 0, 22], // zoomed out on mobile
+          fov: isMobile ? 70 : 60, // wider FOV on small screen
+          near: 0.1,
+          far: 1000,
+        }}
+        gl={{ antialias: !isMobile, alpha: false }} // disable AA on mobile for perf
+        dpr={isMobile ? [1, 1.5] : [1, 2]} // cap DPR lower on mobile
+        style={{ touchAction: "none" }} // prevents scroll conflict
       >
         <ambientLight intensity={0.3} />
         <pointLight position={[0, 0, 0]} intensity={1.5} color="#ffffff" />
@@ -59,7 +72,7 @@ export default function ExplorePage() {
         <Stars
           radius={80}
           depth={50}
-          count={3000}
+          count={isMobile ? 1500 : 3000} // fewer stars on mobile
           factor={3}
           saturation={0.5}
           fade
@@ -71,40 +84,68 @@ export default function ExplorePage() {
         <OrbitControls
           ref={orbitRef}
           enableDamping
-          dampingFactor={0.05}
-          rotateSpeed={0.5}
-          zoomSpeed={0.8}
-          minDistance={5}
-          maxDistance={50}
+          dampingFactor={0.06}
+          rotateSpeed={isMobile ? 0.4 : 0.5}
+          zoomSpeed={isMobile ? 0.6 : 0.8}
+          minDistance={isMobile ? 8 : 5}
+          maxDistance={isMobile ? 60 : 50}
           autoRotate
           autoRotateSpeed={0.3}
+          // Touch: one finger = rotate, two fingers = pinch zoom
           touches={{ ONE: 2, TWO: 1 }}
           onStart={handleInteractStart}
           onEnd={handleInteractEnd}
+          // Slightly limit vertical rotation so brain stays oriented
+          minPolarAngle={Math.PI * 0.2}
+          maxPolarAngle={Math.PI * 0.8}
         />
 
-        <EffectComposer>
-          <Bloom
-            intensity={0.6}
-            luminanceThreshold={0.4}
-            luminanceSmoothing={0.9}
-            blendFunction={BlendFunction.ADD}
-          />
-          <ChromaticAberration
-            offset={[0.0005, 0.0005]}
-            blendFunction={BlendFunction.NORMAL}
-            radialModulation={false}
-            modulationOffset={0}
-          />
-        </EffectComposer>
+        {/* Skip chromatic aberration on mobile — expensive */}
+        {isMobile ? (
+          <EffectComposer>
+            <Bloom
+              intensity={0.5}
+              luminanceThreshold={0.4}
+              luminanceSmoothing={0.9}
+              blendFunction={BlendFunction.ADD}
+            />
+          </EffectComposer>
+        ) : (
+          <EffectComposer>
+            <Bloom
+              intensity={0.5}
+              luminanceThreshold={0.4}
+              luminanceSmoothing={0.9}
+              blendFunction={BlendFunction.ADD}
+            />
+            <ChromaticAberration
+              offset={[0.0005, 0.0005]}
+              blendFunction={BlendFunction.NORMAL}
+              radialModulation={false}
+              modulationOffset={0}
+            />
+          </EffectComposer>
+        )}
       </Canvas>
 
-      {/* UI Overlay */}
+      {/* ── UI Overlay ────────────────────────────── */}
+
+      {/* Stats — top-left desktop, above legend on mobile */}
       <StatsBar />
+
+      {/* Search — top-center desktop, top full-width on mobile */}
       <SearchBar />
-      <Tooltip />
+
+      {/* Tooltip — desktop only (no hover on touch) */}
+      {!isMobile && <Tooltip />}
+
+      {/* Node panel — left-center desktop, bottom sheet on mobile */}
       <NodePanel />
+
+      {/* Domain legend — bottom-left */}
       <DomainLegend />
+
+      {/* Chat — bottom-right, full width on mobile */}
       <ChatOverlay />
     </div>
   )

@@ -5,35 +5,65 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useStore } from "@/store/useStore"
 import { DOMAIN_COLORS } from "@/lib/layout"
 import { fetchNodeSummary } from "@/lib/api"
+import { useIsMobile } from "@/hooks/useIsMobile"
 
 export default function NodePanel() {
   const selectedNode = useStore((s) => s.selectedNode)
   const setSelectedNode = useStore((s) => s.setSelectedNode)
   const [summary, setSummary] = useState<string>("")
   const [loading, setLoading] = useState(false)
+  const isMobile = useIsMobile()
 
   useEffect(() => {
     if (!selectedNode) {
       setSummary("")
       return
     }
-
     setLoading(true)
     setSummary("")
-
     fetchNodeSummary(selectedNode.id)
       .then(setSummary)
       .catch(() => setSummary("Summary unavailable."))
       .finally(() => setLoading(false))
   }, [selectedNode?.id])
 
-  const color = selectedNode ? DOMAIN_COLORS[selectedNode.domain] : "#ffffff"
+  const color = selectedNode
+    ? (DOMAIN_COLORS[selectedNode.domain] ?? "#ffffff")
+    : "#ffffff"
+
+  // ── Desktop: slide in from left, vertically centred
+  const desktopStyles = {
+    position: "fixed" as const,
+    top: "50%",
+    left: "24px",
+    transform: "translateY(-50%)",
+    zIndex: 60,
+    width: "340px",
+    maxHeight: "70vh",
+  }
+
+  // ── Mobile: bottom sheet, full width
+  const mobileStyles = {
+    position: "fixed" as const,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 60,
+    width: "100%",
+    maxHeight: "72vh",
+  }
+
+  const panelStyles = isMobile ? mobileStyles : desktopStyles
+
+  const initial = isMobile ? { y: "100%", opacity: 0 } : { x: -40, opacity: 0 }
+  const animate = isMobile ? { y: 0, opacity: 1 } : { x: 0, opacity: 1 }
+  const exit = isMobile ? { y: "100%", opacity: 0 } : { x: -40, opacity: 0 }
 
   return (
     <AnimatePresence>
       {selectedNode && (
         <>
-          {/* Backdrop — click to close */}
+          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -43,33 +73,48 @@ export default function NodePanel() {
               position: "fixed",
               inset: 0,
               zIndex: 50,
-              background: "transparent",
+              background: isMobile ? "rgba(0,0,0,0.4)" : "transparent",
             }}
           />
 
           {/* Panel */}
           <motion.div
-            initial={{ x: -40, opacity: 0 }} // ← was x: 40
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: -40, opacity: 0 }} // ← was x: 40
+            initial={initial}
+            animate={animate}
+            exit={exit}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
             style={{
-              position: "fixed",
-              top: "25%",
-              left: "24px", // ← was right: '24px'
-              transform: "translateY(-50%)",
-              zIndex: 60,
-              width: "340px",
-              maxHeight: "70vh",
-              background: "rgba(5, 5, 15, 0.92)",
+              ...panelStyles,
+              background: "rgba(5, 5, 15, 0.96)",
               border: `1px solid ${color}33`,
-              borderRadius: "16px",
+              borderRadius: isMobile ? "20px 20px 0 0" : "16px",
               backdropFilter: "blur(20px)",
               overflow: "hidden",
               display: "flex",
               flexDirection: "column",
             }}
           >
+            {/* Mobile drag handle */}
+            {isMobile && (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  padding: "10px 0 4px",
+                  flexShrink: 0,
+                }}
+              >
+                <div
+                  style={{
+                    width: "36px",
+                    height: "4px",
+                    borderRadius: "99px",
+                    background: "rgba(255,255,255,0.15)",
+                  }}
+                />
+              </div>
+            )}
+
             {/* Color accent bar */}
             <div
               style={{
@@ -80,7 +125,12 @@ export default function NodePanel() {
             />
 
             {/* Header */}
-            <div style={{ padding: "20px 20px 16px", flexShrink: 0 }}>
+            <div
+              style={{
+                padding: isMobile ? "14px 20px 12px" : "20px 20px 16px",
+                flexShrink: 0,
+              }}
+            >
               <div
                 style={{
                   display: "flex",
@@ -89,7 +139,7 @@ export default function NodePanel() {
                   gap: "12px",
                 }}
               >
-                <div>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <p
                     style={{
                       color: color,
@@ -105,25 +155,26 @@ export default function NodePanel() {
                   <h2
                     style={{
                       color: "#f8f9fa",
-                      fontSize: "20px",
+                      fontSize: isMobile ? "18px" : "20px",
                       fontWeight: 700,
                       margin: 0,
                       lineHeight: 1.25,
+                      wordBreak: "break-word",
                     }}
                   >
                     {selectedNode.title}
                   </h2>
                 </div>
 
-                {/* Close button */}
+                {/* Close */}
                 <button
                   onClick={() => setSelectedNode(null)}
                   style={{
                     background: "rgba(255,255,255,0.08)",
                     border: "none",
                     color: "#888",
-                    width: "28px",
-                    height: "28px",
+                    width: isMobile ? "32px" : "28px",
+                    height: isMobile ? "32px" : "28px",
                     borderRadius: "50%",
                     cursor: "pointer",
                     fontSize: "14px",
@@ -155,7 +206,7 @@ export default function NodePanel() {
                         border: `1px solid ${color}33`,
                         color: color,
                         fontSize: "10px",
-                        padding: "2px 8px",
+                        padding: "3px 9px",
                         borderRadius: "99px",
                         fontWeight: 500,
                       }}
@@ -166,13 +217,12 @@ export default function NodePanel() {
                 </div>
               )}
 
-              {/* Year if present */}
               {selectedNode.year && (
                 <p
                   style={{
-                    color: "#666",
+                    color: "#555",
                     fontSize: "11px",
-                    margin: "10px 0 0 0",
+                    margin: "10px 0 0",
                   }}
                 >
                   circa {selectedNode.year}
@@ -196,6 +246,7 @@ export default function NodePanel() {
                 padding: "16px 20px 20px",
                 overflowY: "auto",
                 flex: 1,
+                WebkitOverflowScrolling: "touch",
               }}
             >
               {loading ? (
@@ -204,8 +255,8 @@ export default function NodePanel() {
                 <p
                   style={{
                     color: "#c8ccd4",
-                    fontSize: "13px",
-                    lineHeight: 1.7,
+                    fontSize: isMobile ? "14px" : "13px",
+                    lineHeight: 1.75,
                     margin: 0,
                   }}
                 >
@@ -217,7 +268,7 @@ export default function NodePanel() {
             {/* Importance bar */}
             <div
               style={{
-                padding: "12px 20px 16px",
+                padding: isMobile ? "10px 20px 20px" : "12px 20px 16px",
                 borderTop: `1px solid ${color}15`,
                 flexShrink: 0,
               }}
@@ -265,7 +316,6 @@ export default function NodePanel() {
   )
 }
 
-// Animated loading skeleton
 function LoadingPulse({ color }: { color: string }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
